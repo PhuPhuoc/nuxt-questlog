@@ -43,8 +43,7 @@ const navLinks = [
 <style scoped>
 .app-layout {
   min-height: 100vh;
-  padding: 1rem 0;
-  top: 0;
+  padding: var(--spacing-md) 0;
   z-index: 100;
 }
 
