@@ -380,6 +380,8 @@ const menuItems = [
 
 ### 3.1 Cấu trúc Nested Routes
 
+Nested routes tổ chức routes theo cấu trúc phân cấp. Parent page chứa `<NuxtPage />` để render nested pages.
+
 ```
 📁 app/pages/
 ├── 📄 index.vue                     → /
@@ -391,6 +393,8 @@ const menuItems = [
 ```
 
 ### 3.2 Parent Page với NuxtPage
+
+Parent page có `<NuxtPage />` để render nested content. URL phải khớp để nested page được render.
 
 ```vue
 <!-- app/pages/admin.vue - Parent component -->
@@ -411,35 +415,7 @@ const menuItems = [
 </template>
 ```
 
-### 3.3 Sơ đồ Nested Routes
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    NESTED ROUTES                                         │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  URL: /admin/users                                                │
-│                                                                     │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │ app/pages/admin.vue (Parent)                                │   │
-│  │                                                             │   │
-│  │  <h1>Admin Section</h1>                                   │   │
-│  │  <nav>Dashboard | Users | Settings</nav>                   │   │
-│  │                                                             │   │
-│  │  ┌─────────────────────────────────────────────────────┐   │   │
-│  │  │ app/pages/admin/users.vue (Nested)                 │   │   │
-│  │  │                                                     │   │   │
-│  │  │  <h2>User Management</h2>                         │   │   │
-│  │  │  [User list here]                                 │   │   │
-│  │  │                                                     │   │   │
-│  │  └─────────────────────────────────────────────────────┘   │   │
-│  │                                                             │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### 3.4 Ví dụ: Blog với Nested Routes
+### 3.3 Ví dụ: Blog với Nested Routes
 
 ```
 📁 app/pages/
@@ -483,6 +459,33 @@ const categories = ref(['Tech', 'Life', 'Travel'])
     </main>
   </div>
 </template>
+```
+
+**Sơ đồ hoạt động:**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    NESTED ROUTES - FLOW                                  │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  URL: /admin/users                                                │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │ app/pages/admin.vue (Parent)                                │   │
+│  │                                                             │   │
+│  │  <h1>Admin Section</h1>                                   │   │
+│  │  <nav>Dashboard | Users | Settings</nav>                   │   │
+│  │                                                             │   │
+│  │  ┌─────────────────────────────────────────────────────┐   │   │
+│  │  │ app/pages/admin/users.vue (Nested)                  │   │   │
+│  │  │                                                     │   │   │
+│  │  │  <h2>User Management</h2>                         │   │   │
+│  │  │  [User list here]                                 │   │   │
+│  │  │                                                     │   │   │
+│  │  └─────────────────────────────────────────────────────┘   │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ---

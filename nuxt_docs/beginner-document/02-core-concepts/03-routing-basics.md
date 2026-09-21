@@ -103,26 +103,42 @@
 
 ### 2.3 Nested Routes
 
+Nested routes là cách tổ chức routes theo cấu trúc phân cấp. Khi một route có sub-routes, parent page sẽ chứa `<NuxtPage />` để render nested pages.
+
 ```
 📁 app/pages/
 ├── 📄 index.vue                → /
-├── 📄 blog.vue                → /blog
+├── 📄 blog.vue                → /blog (parent layout)
 └── 📁 blog/
-    ├── 📄 index.vue         → /blog (danh sách)
-    └── 📄 [slug].vue        → /blog/:slug
+    ├── 📄 index.vue         → /blog (danh sách bài viết)
+    └── 📄 [slug].vue        → /blog/:slug (chi tiết bài viết)
 ```
+
+**Cách hoạt động:**
+1. Khi vào `/blog` → render `blog.vue` với `NuxtPage` render `blog/index.vue`
+2. Khi vào `/blog/my-post` → render `blog.vue` với `NuxtPage` render `blog/[slug].vue`
 
 ```vue
 <!-- app/pages/blog.vue → /blog (parent layout) -->
 <template>
   <div class="blog-layout">
     <h1>Blog</h1>
+    <!-- Navigation tabs -->
+    <nav>
+      <NuxtLink to="/blog">Danh sách</NuxtLink>
+      <NuxtLink to="/blog/new">Viết bài mới</NuxtLink>
+    </nav>
 
     <!-- Nested page sẽ render ở đây -->
     <NuxtPage />
   </div>
 </template>
 ```
+
+**Khi nào dùng Nested Routes:**
+- Admin dashboard với sidebar navigation
+- Blog với header và sub-pages (danh sách, chi tiết, tạo mới)
+- User profile với tabs (thông tin, bài viết, cài đặt)
 
 ### 2.4 Catch-all Routes
 

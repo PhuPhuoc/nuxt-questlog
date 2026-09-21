@@ -430,10 +430,16 @@ const data = ref('Hello')
 
 // Chỉ chạy trên client
 onMounted(() => {
-  // localStorage, window, etc.
+  // localStorage, window, etc. - chỉ an toàn trong onMounted
   const token = localStorage.getItem('token')
   console.log(token)
 })
+
+// Cách khác: dùng import.meta.client
+if (import.meta.client) {
+  // Code này chỉ chạy trên client
+  console.log(window.innerWidth)
+}
 </script>
 ```
 
@@ -442,6 +448,7 @@ onMounted(() => {
 ```vue
 <script setup>
 // ❌ localStorage không hoạt động trên server
+// Sẽ gây lỗi khi server render
 const token = localStorage.getItem('token')
 
 // ✅ useCookie hoạt động trên cả server và client
@@ -458,17 +465,43 @@ token.value = null
 </script>
 ```
 
-### 6.3 Lazy Loading cho Heavy Data
+### 6.3 Avoiding Window/Document Access on Server
+
+```vue
+<script setup>
+// ❌ SAI - Gây lỗi khi SSR
+const width = window.innerWidth
+const isOnline = navigator.onLine
+
+// ✅ ĐÚNG - Kiểm tra môi trường trước
+const width = ref(0)
+const isOnline = ref(true)
+
+onMounted(() => {
+  width.value = window.innerWidth
+  isOnline.value = navigator.onLine
+})
+
+// Hoặc dùng computed với check
+const deviceWidth = computed(() => {
+  if (import.meta.server) return 1024 // Default cho SSR
+  return window.innerWidth
+})
+</script>
+```
+
+### 6.4 Lazy Loading cho Heavy Data
 
 ```vue
 <script setup>
 // Non-lazy: Đợi data trước khi render page
+// User thấy loading state, tốt cho SEO
 const { data } = await useFetch('/api/heavy-data')
 
 // Lazy: Render page trước, fetch data song song
+// User thấy page ngay, data load sau (với loading indicator)
 const { data, pending } = await useLazyFetch('/api/heavy-data')
 </script>
-```
 
 ---
 

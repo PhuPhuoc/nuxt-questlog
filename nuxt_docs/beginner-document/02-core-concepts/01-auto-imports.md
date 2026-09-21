@@ -208,10 +208,9 @@ export default {
 ```
 
 ```vue
-<!-- ✅ CÁCH MỚI: <script setup> -->
+<!-- ✅ CÁCH MỚI: <script setup> - KHÔNG cần import Vue APIs! -->
 <script setup>
-import { ref } from 'vue'
-
+// ref, computed, onMounted... đều được auto-import!
 const count = ref(0)
 
 function increment() {
@@ -460,18 +459,17 @@ console.log(HTTP_STATUS.OK)  // 200
 ### ❌ Sai: Quên auto-import hoạt động như thế nào
 
 ```vue
-<!-- ❌ SAI - Vẫn phải import từ thư viện bên ngoài -->
+<!-- ❌ SAI - Không cần import Vue APIs trong Nuxt -->
 <script setup>
-import { ref } from 'vue'  // Vue APIs thì OK
-import { useAuth } from '@/composables/useAuth'  // ❌ Sai - Nếu trong app/composables/
+// import { ref } from 'vue'  // ❌ Không cần thiết!
 </script>
 ```
 
 ```vue
-<!-- ✅ ĐÚNG - Composable trong app/composables/ tự động có -->
+<!-- ✅ ĐÚNG - Vue APIs và composables đều được auto-import -->
 <script setup>
-// Vue APIs - Cần import từ 'vue'
-import { ref } from 'vue'
+// Vue APIs - KHÔNG cần import!
+const count = ref(0)
 
 // Composable trong app/composables/ - KHÔNG cần import!
 const auth = useAuth()  // ✅ Tự động có
@@ -554,9 +552,8 @@ const date = formatDate(new Date())
 │                                                                     │
 │  ❌ CẦN IMPORT THỦ CÔNG:                                         │
 │  ────────────────────────────────────────────────────────           │
-│  • Thư viện bên ngoài (lodash, axios, etc.)                        │
-│  • Vue APIs từ 'vue' (ref, computed, etc.)                         │
-│  • Hàm từ thư viện                                                │
+│  • Thư viện bên ngoài (lodash, axios, dayjs, etc.)                 │
+│  • Hàm từ thư viện bên ngoài                                      │
 │                                                                     │
 │  📁 CẤU TRÚC:                                                     │
 │  ────────────────────────────────────────────────────────          │

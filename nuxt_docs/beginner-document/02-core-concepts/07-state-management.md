@@ -34,28 +34,13 @@
 
 ### Các loại State trong Nuxt
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    CÁC LOẠI STATE TRONG NUXT                          │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  LOCAL STATE (ref/reactive)                                        │
-│  ├── Chỉ trong 1 component                                       │
-│  ├── Không chia sẻ                                               │
-│  └── Ví dụ: Form input, local toggle                            │
-│                                                                     │
-│  SHARED STATE (useState)                                          │
-│  ├── Chia sẻ giữa components                                    │
-│  ├── SSR-safe                                                   │
-│  └── Ví dụ: Sidebar toggle, theme                               │
-│                                                                     │
-│  GLOBAL STATE (Pinia)                                             │
-│  ├── Chia sẻ toàn app                                           │
-│  ├── Có business logic                                          │
-│  └── Ví dụ: Auth, Cart, User preferences                        │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
+Nuxt có 3 cách quản lý state, từ đơn giản đến phức tạp:
+
+| Loại | Phạm vi | Dùng khi | Ví dụ |
+|------|---------|----------|-------|
+| `ref()` | 1 component | State đơn giản, tạm thời | Form inputs, local toggles |
+| `useState()` | Toàn app (SSR-safe) | State chia sẻ, đơn giản | Theme, sidebar, notifications |
+| Pinia | Toàn app | State phức tạp, có logic | Auth, Cart, Products catalog |
 
 ---
 
@@ -460,6 +445,14 @@ export const useCartStore = defineStore('cart', () => {
 
 ## 5. Khi Nào Dùng Cái Nào?
 
+### So sánh nhanh
+
+| Loại | Khi nào | Ví dụ |
+|------|---------|-------|
+| `ref()` | Local, đơn giản | Form input, local toggle |
+| `useState()` | Shared, đơn giản | Theme, sidebar |
+| `Pinia` | Complex, logic | Auth, Cart, Products |
+
 ### Decision Tree
 
 ```
@@ -493,14 +486,6 @@ export const useCartStore = defineStore('cart', () => {
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
-
-### So sánh nhanh
-
-| Loại | Khi nào | Ví dụ |
-|------|---------|-------|
-| `ref()` | Local, đơn giản | Form input, local toggle |
-| `useState()` | Shared, đơn giản | Theme, sidebar |
-| `Pinia` | Complex, logic | Auth, Cart, Products |
 
 ### Examples theo use case
 
