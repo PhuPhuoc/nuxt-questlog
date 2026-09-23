@@ -541,24 +541,24 @@ async function handleArchive() {
 │                    EMITS LIFECYCLE - TỪNG BƯỚC                      │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  1. USER TƯƠNG TÁC                                                 │
+│  1. USER TƯƠNG TÁC                                                  │
 │     User click button, submit form, hover...                        │
 │                                                                     │
-│  2. CHILD XỬ LÝ                                                    │
+│  2. CHILD XỬ LÝ                                                     │
 │     function handleClick() {                                        │
 │       // Validate data (optional)                                   │
 │       // Transform data (optional)                                  │
 │       emit('submit', payload)                                       │
 │     }                                                               │
 │                                                                     │
-│  3. EMIT TRIGGERED                                                 │
-│     emit('submit', { id: 1, name: 'test' })                        │
+│  3. EMIT TRIGGERED                                                  │
+│     emit('submit', { id: 1, name: 'test' })                         │
 │                                                                     │
-│  4. PARENT NHẬN EVENT                                              │
+│  4. PARENT NHẬN EVENT                                               │
 │     <Child @submit="handleParentSubmit" />                          │
 │     function handleParentSubmit(payload) { ... }                    │
 │                                                                     │
-│  5. PARENT UPDATE STATE                                            │
+│  5. PARENT UPDATE STATE                                             │
 │     Parent state thay đổi → re-render                               │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
@@ -572,19 +572,19 @@ async function handleArchive() {
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  ❌ Child trực tiếp sửa Parent state?                              │
-│     → KHÔNG ĐƯỢC! Props are read-only                              │
+│     → KHÔNG ĐƯỢC! Props are read-only                               │
 │                                                                     │
 │  ✅ Giải pháp: CHILD EMIT → PARENT XỬ LÝ                           │
 │                                                                     │
-│     ┌─────────┐      emit('event')       ┌─────────┐              │
-│     │  Child  │  ───────────────────────→│  Parent │              │
-│     │         │                          │         │              │
-│     │ - Props │                          │ - State │              │
-│     │ - Logic │                          │ - Logic │              │
-│     │ - Emit  │                          │         │              │
-│     └─────────┘                          └─────────┘              │
+│     ┌─────────┐      emit('event')       ┌─────────┐                │
+│     │  Child  │  ───────────────────────→│  Parent │                │
+│     │         │                          │         │                │
+│     │ - Props │                          │ - State │                │
+│     │ - Logic │                          │ - Logic │                │
+│     │ - Emit  │                          │         │                │
+│     └─────────┘                          └─────────┘                │
 │                                                                     │
-│  Child giữ logic riêng, nhưng STATE vẫn ở Parent!                 │
+│  Child giữ logic riêng, nhưng STATE vẫn ở Parent!                   │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -648,20 +648,20 @@ function onSubmit(data: { id: number; name: string }) {
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    V-MODEL HOẠT ĐỘNG NHƯ THẾ NÀO?                  │
+│                    V-MODEL HOẠT ĐỘNG NHƯ THẾ NÀO?                   │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  <CustomInput v-model="email" />                                    │
 │                                                                     │
-│  Tương đương với:                                                  │
+│  Tương đương với:                                                   │
 │  <CustomInput                                                       │
 │    :modelValue="email"                                              │
-│    @update:modelValue="email = $event"                             │
+│    @update:modelValue="email = $event"                              │
 │  />                                                                 │
 │                                                                     │
-│  Khi input thay đổi:                                               │
+│  Khi input thay đổi:                                                │
 │  Child emit('update:modelValue', newValue)                          │
-│  → Parent nhận → cập nhật `email` → props truyền xuống lại         │
+│  → Parent nhận → cập nhật `email` → props truyền xuống lại          │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -748,28 +748,28 @@ const dateRange = ref({
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    EMITS - CASE THỰC TẾ                              │
+│                    EMITS - CASE THỰC TẾ                             │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  CASE 1: FORM HANDLING                                             │
+│  CASE 1: FORM HANDLING                                              │
 │  ───────────────────────────────────────                            │
-│  <Form @submit="handleSubmit" @invalid="handleInvalid" />          │
-│  Component tự validate, khi submit hợp lệ → emit lên               │
+│  <Form @submit="handleSubmit" @invalid="handleInvalid" />           │
+│  Component tự validate, khi submit hợp lệ → emit lên                │
 │                                                                     │
-│  CASE 2: LIST ITEM ACTIONS                                         │
+│  CASE 2: LIST ITEM ACTIONS                                          │
 │  ───────────────────────────────────────                            │
-│  <DataTable @row-click="handleRowClick" @delete="handleDelete" />  │
-│  Item action → emit với id/data → Parent xử lý                     │
+│  <DataTable @row-click="handleRowClick" @delete="handleDelete" />   │
+│  Item action → emit với id/data → Parent xử lý                      │
 │                                                                     │
-│  CASE 3: MODAL CONTROL                                             │
+│  CASE 3: MODAL CONTROL                                              │
 │  ───────────────────────────────────────                            │
-│  <Modal @close="showModal = false" @confirm="handleConfirm" />     │
+│  <Modal @close="showModal = false" @confirm="handleConfirm" />      │
 │  Control lifecycle từ bên ngoài                                     │
 │                                                                     │
-│  CASE 4: TOGGLE/SWITCH                                            │
+│  CASE 4: TOGGLE/SWITCH                                              │
 │  ───────────────────────────────────────                            │
 │  <ToggleSwitch @update:modelValue="handleToggle" :model-value="v" />│
-│  Click → toggle → emit → Parent cập nhật state                     │
+│  Click → toggle → emit → Parent cập nhật state                      │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -971,21 +971,21 @@ async function handleDelete(id: number) {
 │                    SLOTS WORKFLOW                                   │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  1. PARENT ĐỊNH NGHĨA CONTENT                                      │
+│  1. PARENT ĐỊNH NGHĨA CONTENT                                       │
 │     <Card>                                                          │
 │       <p>Nội dung bên trong</p>                                     │
 │     </Card>                                                         │
 │                                                                     │
-│  2. NUXT/VUE WRAP CONTENT                                         │
+│  2. NUXT/VUE WRAP CONTENT                                           │
 │     Card nhận được content như một "slot"                           │
-│     Content chưa render, chờ Child quyết định vị trí               │
+│     Content chưa render, chờ Child quyết định vị trí                │
 │                                                                     │
-│  3. CHILD CHỌN VỊ TRÍ                                              │
+│  3. CHILD CHỌN VỊ TRÍ                                               │
 │     <div><slot /></div>                                             │
 │     → Vue render content của Parent tại đây                         │
 │                                                                     │
-│  4. CONTENT RENDER                                                 │
-│     Kết quả: <div><p>Nội dung bên trong</p></div>                  │
+│  4. CONTENT RENDER                                                  │
+│     Kết quả: <div><p>Nội dung bên trong</p></div>                   │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -1062,15 +1062,15 @@ defineProps<{
 │                    SCOPED SLOTS                                     │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  ĐÂY LÀ ĐIỂM ĐẶC BIỆT CỦA SLOTS!                                  │
+│  ĐÂY LÀ ĐIỂM ĐẶC BIỆT CỦA SLOTS!                                    │
 │                                                                     │
 │  Bình thường: Parent → Child (truyền content)                       │
-│  Scoped Slots: Parent ← Child (Child gửi data lại Parent)          │
+│  Scoped Slots: Parent ← Child (Child gửi data lại Parent)           │
 │                                                                     │
-│  Child có thể truyền biến qua slot:                                │
-│  <slot :item="item" :index="i" />                                  │
+│  Child có thể truyền biến qua slot:                                 │
+│  <slot :item="item" :index="i" />                                   │
 │                                                                     │
-│  Parent nhận bằng destructuring:                                   │
+│  Parent nhận bằng destructuring:                                    │
 │  <template #default="{ item, index }">                              │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
@@ -1108,35 +1108,35 @@ defineProps<{
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    SLOTS - CASE THỰC TẾ                              │
+│                    SLOTS - CASE THỰC TẾ                             │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  CASE 1: WRAPPER/CONTAINER COMPONENT                               │
+│  CASE 1: WRAPPER/CONTAINER COMPONENT                                │
 │  ───────────────────────────────────────                            │
-│  <Card><p>Nội dung</p></Card>                                      │
-│  Card wrap nội dung, giữ layout nhất quán                          │
+│  <Card><p>Nội dung</p></Card>                                       │
+│  Card wrap nội dung, giữ layout nhất quán                           │
 │                                                                     │
-│  CASE 2: LAYOUT SYSTEM                                             │
+│  CASE 2: LAYOUT SYSTEM                                              │
 │  ───────────────────────────────────────                            │
 │  <AppLayout>                                                        │
 │    <template #header>...</template>                                 │
-│    <template #sidebar>...</template>                                 │
+│    <template #sidebar>...</template>                                │
 │  </AppLayout>                                                       │
 │  Header, sidebar, footer - layout động                              │
 │                                                                     │
 │  CASE 3: LIST COMPONENT                                             │
 │  ───────────────────────────────────────                            │
-│  <List :items="users">                                             │
+│  <List :items="users">                                              │
 │    <template #item="{ item }">...</template>                        │
 │  </List>                                                            │
-│  Component quản lý list, Parent quyết định render gì              │
+│  Component quản lý list, Parent quyết định render gì                │
 │                                                                     │
 │  CASE 4: CONDITIONAL SLOT (fallback content)                        │
 │  ───────────────────────────────────────                            │
 │  <Button>                                                           │
-│    <template #icon>...</template>  ← Có thì hiện icon              │
-│  </Button>                                                         │
-│  Slot có thể trống → component xử lý fallback                      │
+│    <template #icon>...</template>  ← Có thì hiện icon               │
+│  </Button>                                                          │
+│  Slot có thể trống → component xử lý fallback                       │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -1324,11 +1324,12 @@ const editing = ref(false)
     <Header />
     <Sidebar />
 
-    <!-- CHỈ tải khi cần (lazy) - Thêm prefix "Lazy"! -->
+    <!-- CHỈ tải khi cần (lazy) - nếu v-if = true thì component mới được tải -->
     <LazyModal v-if="showModal" @close="showModal = false" />
     <LazyHeavyChart v-if="showChart" :data="chartData" />
 
-    <!-- Lazy component với loading state -->
+    <!-- Không có v-if => sẽ bắt đầu tải sau khi component này onMount xong -->
+    <!-- Tránh việc phải load quá nhiều thứ cùng một lúc, ưu tiên load các component quan trọng trước -->
     <LazyDataTable :data="tableData" />
 
     <!-- Các component nặng khác -->
@@ -1347,13 +1348,13 @@ const editing = ref(false)
 │                                                                     │
 │  1. LAZY PREFIX (Nuxt built-in)                                     │
 │     <LazyComponentName />                                           │
-│     → Chỉ tải khi được mount                                       │
+│     → Chỉ tải khi được mount                                        │
 │                                                                     │
 │  2. MANUAL DYNAMIC IMPORT                                           │
 │     defineAsyncComponent(() => import(...))                         │
-│     → Kiểm soát hoàn toàn quá trình tải                            │
+│     → Kiểm soát hoàn toàn quá trình tải                             │
 │                                                                     │
-│  3. LAZY ON VISIBLE (cần module bổ sung)                           │
+│  3. LAZY ON VISIBLE (cần module bổ sung)                            │
 │     Tải khi component scroll vào viewport                           │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
@@ -1413,17 +1414,17 @@ const emit = defineEmits<{
 │  CASE 1: MODALS/POPUPS                                              │
 │  ───────────────────────────────────────                            │
 │  <LazyModal v-if="show">...</LazyModal>                             │
-│  Modal hiếm khi dùng → lazy load cho nhanh                         │
+│  Modal hiếm khi dùng → lazy load cho nhanh                          │
 │                                                                     │
-│  CASE 2: CHARTS/GRAPHS                                             │
+│  CASE 2: CHARTS/GRAPHS                                              │
 │  ───────────────────────────────────────                            │
 │  <LazyChart :data="..." />                                          │
-│  Chart.js nặng → chỉ load khi cần hiển thị                        │
+│  Chart.js nặng → chỉ load khi cần hiển thị                          │
 │                                                                     │
-│  CASE 3: EDITORS (Rich text, Code)                                 │
+│  CASE 3: EDITORS (Rich text, Code)                                  │
 │  ───────────────────────────────────────                            │
 │  <LazyEditor v-if="editing" />                                      │
-│  Editor nặng → load khi user click edit                            │
+│  Editor nặng → load khi user click edit                             │
 │                                                                     │
 │  CASE 4: CONDITIONAL FEATURES                                       │
 │  ───────────────────────────────────────                            │

@@ -18,22 +18,22 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    STATE TYPES                                         │
+│                    STATE TYPES                                      │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  1. LOCAL STATE (ref)                                              │
-│     ├── Chỉ trong 1 component                                      │
-│     └── Ví dụ: Form input, local toggle                            │
+│  1. LOCAL STATE (ref)                                               │
+│     ├── Chỉ trong 1 component                                       │
+│     └── Ví dụ: Form input, local toggle                             │
 │                                                                     │
-│  2. SHARED STATE (useState)                                        │
-│     ├── Chia sẻ giữa components                                   │
-│     ├── SSR-safe                                                   │
-│     └── Ví dụ: Theme, user preferences                             │
+│  2. SHARED STATE (useState)                                         │
+│     ├── Chia sẻ giữa components                                     │
+│     ├── SSR-safe                                                    │
+│     └── Ví dụ: Theme, user preferences                              │
 │                                                                     │
-│  3. GLOBAL STATE (Pinia)                                           │
-│     ├── Toàn app                                                   │
-│     ├── Business logic                                             │
-│     └── Ví dụ: Auth, Cart, Products                               │
+│  3. GLOBAL STATE (Pinia)                                            │
+│     ├── Toàn app                                                    │
+│     ├── Business logic                                              │
+│     └── Ví dụ: Auth, Cart, Products                                 │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -137,19 +137,19 @@ console.log(userName.value)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    ref() vs useState()                                 │
+│                    ref() vs useState()                              │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  ref()                                                           │
-│  ├── Component-scoped                                             │
-│  ├── Mỗi component có bản copy riêng                              │
-│  └── State mất khi component unmount                              │
+│  ref()                                                              │
+│  ├── Component-scoped                                               │
+│  ├── Mỗi component có bản copy riêng                                │
+│  └── State mất khi component unmount                                │
 │                                                                     │
-│  useState()                                                       │
-│  ├── Request-scoped (SSR)                                         │
-│  ├── Shared giữa components trong cùng request                    │
-│  ├── Persistent across renders                                     │
-│  └── SSR-safe (serialize/deserialize)                             │
+│  useState()                                                         │
+│  ├── Request-scoped (SSR)                                           │
+│  ├── Shared giữa components trong cùng request                      │
+│  ├── Persistent across renders                                      │
+│  └── SSR-safe (serialize/deserialize)                               │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -429,25 +429,25 @@ export const useAuthStore = defineStore('auth', () => {
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    STATE MANAGEMENT CHEAT SHEET                        │
+│                    STATE MANAGEMENT CHEAT SHEET                     │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  LOCAL STATE:                                                      │
-│  const count = ref(0)                                             │
+│  LOCAL STATE:                                                       │
+│  const count = ref(0)                                               │
 │                                                                     │
-│  SHARED STATE:                                                     │
-│  const theme = useState('theme', () => 'light')                   │
+│  SHARED STATE:                                                      │
+│  const theme = useState('theme', () => 'light')                     │
 │                                                                     │
-│  PINIA STORE:                                                      │
-│  // stores/counter.ts                                              │
-│  export const useCounterStore = defineStore('counter', () => {     │
-│    const count = ref(0)                                            │
-│    return { count }                                                │
-│  })                                                                │
+│  PINIA STORE:                                                       │
+│  // stores/counter.ts                                               │
+│  export const useCounterStore = defineStore('counter', () => {      │
+│    const count = ref(0)                                             │
+│    return { count }                                                 │
+│  })                                                                 │
 │                                                                     │
-│  // Sử dụng                                                       │
-│  const store = useCounterStore()                                   │
-│  store.count++                                                     │
+│  // Sử dụng                                                         │
+│  const store = useCounterStore()                                    │
+│  store.count++                                                      │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```

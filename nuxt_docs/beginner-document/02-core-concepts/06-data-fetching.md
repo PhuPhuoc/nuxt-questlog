@@ -19,23 +19,23 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    DATA FETCHING METHODS                              │
+│                    DATA FETCHING METHODS                            │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  useFetch()                                                       │
-│  ├── Wrapper around useAsyncData + $fetch                        │
-│  ├── Auto-caching, reactive params                                 │
-│  └── Tốt nhất cho: Page-level data fetching                      │
+│  useFetch()                                                         │
+│  ├── Wrapper around useAsyncData + $fetch                           │
+│  ├── Auto-caching, reactive params                                  │
+│  └── Tốt nhất cho: Page-level data fetching                         │
 │                                                                     │
-│  useAsyncData()                                                   │
-│  ├── Fetch data với custom key                                    │
-│  ├── Kiểm soát caching                                            │
-│  └── Tốt nhất cho: Complex data transformations                   │
+│  useAsyncData()                                                     │
+│  ├── Fetch data với custom key                                      │
+│  ├── Kiểm soát caching                                              │
+│  └── Tốt nhất cho: Complex data transformations                     │ 
 │                                                                     │
-│  $fetch()                                                         │
-│  ├── Raw HTTP client                                               │
-│  ├── Không có caching tự động                                     │
-│  └── Tốt nhất cho: Mutations, one-off requests                   │
+│  $fetch()                                                           │
+│  ├── Raw HTTP client                                                │
+│  ├── Không có caching tự động                                       │
+│  └── Tốt nhất cho: Mutations, one-off requests                      │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -44,24 +44,24 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    KHI NÀO DÙNG GÌ?                                   │
+│                    KHI NÀO DÙNG GÌ?                                 │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  useFetch()                                                        │
-│  ├── GET requests đơn giản                                        │
-│  ├── Params thay đổi theo reactive values                         │
-│  └── Page component data                                           │
+│  useFetch()                                                         │
+│  ├── GET requests đơn giản                                          │
+│  ├── Params thay đổi theo reactive values                           │
+│  └── Page component data                                            │
 │                                                                     │
-│  useAsyncData()                                                   │
-│  ├── Khi cần custom key/caching                                   │
-│  ├── Complex data transformations                                  │
-│  └── Khi cần nhiều requests cùng lúc                            │
+│  useAsyncData()                                                     │
+│  ├── Khi cần custom key/caching                                     │
+│  ├── Complex data transformations                                   │
+│  └── Khi cần nhiều requests cùng lúc                                │
 │                                                                     │
-│  $fetch()                                                         │
-│  ├── Form submissions                                              │
-│  ├── Mutations (POST, PUT, DELETE)                                │
-│  ├── Event handlers (click, submit)                                │
-│  └── One-off requests trong composables                           │
+│  $fetch()                                                           │
+│  ├── Form submissions                                               │
+│  ├── Mutations (POST, PUT, DELETE)                                  │
+│  ├── Event handlers (click, submit)                                 │
+│  └── One-off requests trong composables                             │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -598,36 +598,36 @@ async function submitForm() {
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    DATA FETCHING CHEAT SHEET                          │
+│                    DATA FETCHING CHEAT SHEET                        │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  useFetch(url, options):                                           │
-│  ├── Auto-caching với key                                         │
-│  ├── Reactive query params                                         │
-│  └── Dùng cho: GET requests, page data                           │
+│  useFetch(url, options):                                            │
+│  ├── Auto-caching với key                                           │
+│  ├── Reactive query params                                          │
+│  └── Dùng cho: GET requests, page data                              │
 │                                                                     │
-│  useAsyncData(key, fn, options):                                  │
-│  ├── Custom key/caching control                                    │
-│  └── Dùng cho: Complex logic, multiple requests                   │
+│  useAsyncData(key, fn, options):                                    │ 
+│  ├── Custom key/caching control                                     │
+│  └── Dùng cho: Complex logic, multiple requests                     │
 │                                                                     │
-│  $fetch(url, options):                                            │
-│  ├── No auto-caching                                              │
-│  └── Dùng cho: Mutations, event handlers                          │
+│  $fetch(url, options):                                              │
+│  ├── No auto-caching                                                │
+│  └── Dùng cho: Mutations, event handlers                            │
 │                                                                     │
-│  OPTIONS:                                                          │
-│  ├── query - Query parameters                                     │
-│  ├── headers - Custom headers                                     │
-│  ├── body - Request body                                          │
-│  ├── method - HTTP method                                         │
-│  ├── transform - Transform response                                │
-│  ├── lazy - Don't block navigation                                 │
-│  └── default - Default value                                       │
+│  OPTIONS:                                                           │
+│  ├── query - Query parameters                                       │
+│  ├── headers - Custom headers                                       │
+│  ├── body - Request body                                            │
+│  ├── method - HTTP method                                           │
+│  ├── transform - Transform response                                 │
+│  ├── lazy - Don't block navigation                                  │
+│  └── default - Default value                                        │
 │                                                                     │
-│  RESPONSE:                                                         │
-│  ├── data - Response data                                         │
-│  ├── pending - Loading state                                       │
-│  ├── error - Error object                                         │
-│  └── refresh() - Re-fetch data                                    │
+│  RESPONSE:                                                          │
+│  ├── data - Response data                                           │
+│  ├── pending - Loading state                                        │
+│  ├── error - Error object                                           │
+│  └── refresh() - Re-fetch data                                      │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
