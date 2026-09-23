@@ -1,250 +1,140 @@
-# Migration: Nuxt 3 → Nuxt 4
+# Nuxt 3 → Nuxt 4 - Hướng Dẫn Nâng Cấp
 
-> **Mục tiêu:** Hướng dẫn chuyển từ Nuxt 3 lên Nuxt 4.
+> **Mục tiêu:** Hiểu sự khác biệt giữa Nuxt 3 và Nuxt 4 và cách nâng cấp.
 
 ## Mục lục
 
-1. [Tóm tắt thay đổi](#1-tóm-tắt-thay-đổi)
-2. [Thư mục app/](#2-thư-mục-app)
-3. [Pinia được tích hợp sẵn](#3-pinia-được-tích-hợp-sẵn)
-4. [compatibilityDate](#4-compatibilitydate)
-5. [Breaking Changes](#5-breaking-changes)
-6. [Migration Checklist](#6-migration-checklist)
+1. [Nuxt 3 vs Nuxt 4](#1-nuxt-3-vs-nuxt-4)
+2. [Thay đổi chính](#2-thay-đổi-chính)
+3. [Migration Guide](#3-migration-guide)
 
 ---
 
-## 1. Tóm Tắt Thay Đổi
+## 1. Nuxt 3 vs Nuxt 4
+
+### 1.1 Thay đổi lớn nhất
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    NUXT 3 → NUXT 4                                      │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  ✅ app/ directory là MẶC ĐỊNH                                   │
-│  ✅ Pinia được tích hợp sẵn (không cần module)              │
-│  ✅ compatibilityDate bắt buộc                                    │
-│  ✅ TypeScript inference tốt hơn                                 │
-│  ✅ DevTools cải thiện                                           │
+│  NUXT 3:                                                          │
+│  ├── /pages, /components, /composables (root level)             │
+│  └── app/ folder là optional                                     │
 │                                                                     │
-│  ⚠️ Breaking changes:                                              │
-│  ├── Pages ở app/ thay vì root                                  │
-│  ├── Cần compatibilityDate                                        │
-│  └── Một số deprecations                                         │
+│  NUXT 4:                                                          │
+│  ├── /app/pages, /app/components, /app/composables              │
+│  └── app/ folder là BẮT BUỘC                                    │
+│                                                                     │
+│  ⚠️ Breaking change: Cấu trúc thư mục thay đổi!               │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
+```
+
+### 1.2 So sánh cấu trúc
+
+```
+NUXT 3:                      NUXT 4:
+─────────                     ─────────
+/pages/                     /app/pages/
+/components/               /app/components/
+/composables/              /app/composables/
+/layouts/                  /app/layouts/
+/middleware/               /app/middleware/
+/plugins/                  /app/plugins/
+/stores/                   /app/stores/
+/assets/                   /app/assets/
+/utils/                    /app/utils/
+
+(none)                     /app/app.vue
+/server/                   /server/
+/public/                   /public/
+/nuxt.config.ts            /nuxt.config.ts
 ```
 
 ---
 
-## 2. Thư Mục app/
+## 2. Thay Đổi Chính
 
-### 2.1 Thay đổi cấu trúc
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    NUXT 3                              NUXT 4          │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  # Cấu trúc Nuxt 3:                                            │
-│  📁 root/                                                       │
-│  ├── 📁 pages/         →         📁 app/pages/                │
-│  ├── 📁 components/    →         📁 app/components/           │
-│  ├── 📁 composables/   →         📁 app/composables/          │
-│  └── nuxt.config.ts   →         nuxt.config.ts               │
-│                                                                     │
-│  # Cấu trúc Nuxt 4:                                            │
-│  📁 root/                                                       │
-│  └── 📁 app/                                                    │
-│      ├── 📁 pages/                                              │
-│      ├── 📁 components/                                         │
-│      └── ...                                                    │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### 2.2 Di chuyển files
+### 2.1 app/ folder bắt buộc
 
 ```bash
-# Di chuyển từng thư mục
-mv pages app/pages
-mv components app/components
-mv composables app/composables
-mv layouts app/layouts
-mv middleware app/middleware
-mv plugins app/plugins
-mv utils app/utils
-mv stores app/stores
+# Tạo cấu trúc Nuxt 4
+mkdir -p app/pages app/components app/composables app/layouts
 ```
 
-### 2.3 Hoặc giữ cấu trúc cũ
+### 2.2 nuxt.config.ts
 
 ```typescript
 // nuxt.config.ts
-// Nếu muốn giữ cấu trúc Nuxt 3:
-
 export default defineNuxtConfig({
-  future: {
-    compatibilityVersion: 3  // Giữ cấu trúc cũ
-  },
-  compatibilityDate: '2025-07-15'
+  compatibilityDate: '2024-07-15', // Required in Nuxt 4
+  // ... rest of config
 })
 ```
 
----
-
-## 3. Pinia Được Tích Hợp Sẵn
-
-### 3.1 Nuxt 3 - Cần setup
-
-```typescript
-// nuxt.config.ts (Nuxt 3)
-export default defineNuxtConfig({
-  modules: ['@pinia/nuxt'],
-  pinia: {
-    storesDirs: ['./stores/**']
-  }
-})
-```
-
-```typescript
-// stores/auth.ts
-import { defineStore } from 'pinia'
-
-export const useAuthStore = defineStore('auth', () => {
-  // Store code
-})
-```
-
-### 3.2 Nuxt 4 - Không cần setup
-
-```typescript
-// nuxt.config.ts (Nuxt 4)
-export default defineNuxtConfig({
-  // Không cần modules: ['@pinia/nuxt']!
-  compatibilityDate: '2025-07-15'
-})
-```
-
-```typescript
-// app/stores/auth.ts
-// Tự động được auto-import!
-export const useAuthStore = defineStore('auth', () => {
-  // Store code
-})
-```
-
-### 3.3 Thay đổi tên thư mục
+### 2.3 Không còn pages/ root level
 
 ```bash
-# Nuxt 3
-mv stores app/stores
+# ❌ Nuxt 4 - Không hoạt động
+/pages/index.vue
 
-# Hoặc giữ nguyên (vẫn hoạt động)
+# ✅ Nuxt 4
+/app/pages/index.vue
 ```
 
 ---
 
-## 4. compatibilityDate
+## 3. Migration Guide
 
-### 4.1 Thêm compatibilityDate
+### Bước 1: Backup project hiện tại
+
+```bash
+# Backup
+cp -r my-nuxt3-app my-nuxt3-app-backup
+```
+
+### Bước 2: Tạo app/ folder
+
+```bash
+# Di chuyển vào app/
+mkdir app
+mv pages components composables layouts middleware plugins stores assets utils app/
+```
+
+### Bước 3: Tạo app.vue
+
+```vue
+<!-- app/app.vue -->
+<template>
+  <div>
+    <NuxtRouteAnnouncer />
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
+  </div>
+</template>
+```
+
+### Bước 4: Thêm compatibilityDate
 
 ```typescript
-// nuxt.config.ts (Nuxt 4)
+// nuxt.config.ts
 export default defineNuxtConfig({
-  compatibilityDate: '2025-07-15',  // ← BẮT BUỘC
-  devtools: { enabled: true }
+  compatibilityDate: '2024-07-15',
+  // ... rest
 })
 ```
 
-### 4.2 Ý nghĩa của compatibilityDate
+### Bước 5: Test
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    COMPATIBILITY DATE                                   │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  compatibilityDate = "Ràng buộc" với một thời điểm           │
-│                                                                     │
-│  • Nuxt sẽ sử dụng behavior của phiên bản tại ngày đó         │
-│  • Giúp app của bạn ổn định khi Nuxt update                   │
-│  • Bạn có thể chọn ngày mới khi muốn adopt features mới       │
-│                                                                     │
-│  VD: '2025-07-15' = Dùng behavior của Nuxt ngày 15/07/2025     │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
+```bash
+npm run dev
 ```
 
 ---
 
-## 5. Breaking Changes
+## ▶️ Tham Khảo
 
-### 5.1 Auto-imports thay đổi
-
-```typescript
-// Tất cả composables/utils phải trong app/
-// Không còn auto-import từ root
-```
-
-### 5.2 Vue APIs
-
-```typescript
-// Một số Vue 3.5+ features yêu cầu compatibilityDate mới
-
-// VD: defineModel (Vue 3.5+) yêu cầu recent compatibilityDate
-```
-
-### 5.3 Server routes
-
-```typescript
-// Server routes vẫn ở server/
-// Không thay đổi
-```
-
----
-
-## 6. Migration Checklist
-
-### Trước khi migrate
-
-```
-□ Backup project
-□ Kiểm tra Nuxt 3 hoạt động tốt
-□ Note lại custom configurations
-```
-
-### Migration steps
-
-```
-□ 1. Update Nuxt: npm install nuxt@latest
-□ 2. Tạo thư mục app/
-□ 3. Di chuyển pages → app/pages
-□ 4. Di chuyển components → app/components
-□ 5. Di chuyển composables → app/composables
-□ 6. Di chuyển layouts → app/layouts
-□ 7. Di chuyển stores → app/stores
-□ 8. Di chuyển plugins → app/plugins
-□ 9. Di chuyển middleware → app/middleware
-□ 10. Di chuyển utils → app/utils
-□ 11. Thêm compatibilityDate vào nuxt.config.ts
-□ 12. Xóa @pinia/nuxt khỏi modules (nếu có)
-□ 13. Chạy dev server và test
-□ 14. Fix breaking changes nếu có
-```
-
-### Sau khi migrate
-
-```
-□ Test tất cả routes
-□ Test tất cả components
-□ Test Pinia stores
-□ Test SSR
-□ Test DevTools
-```
-
----
-
-## ▶️ Tiếp Theo
-
-→ [03-common-gotchas.md](03-common-gotchas.md) - Những bẫy thường gặp
-
-hoặc → [02-core-concepts/01-auto-imports.md](../02-core-concepts/01-auto-imports.md) - Quay lại học Core Concepts
+→ [Nuxt 4 Migration](https://nuxt.com/docs/getting-started/upgrade#upgrading-to-nuxt-4) - Hướng dẫn chi tiết

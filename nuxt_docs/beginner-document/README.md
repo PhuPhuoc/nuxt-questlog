@@ -1,210 +1,230 @@
-# Hướng Dẫn Học Nuxt 4 - Dành Cho Người Mới
+# Nuxt Beginner Documentation - Tài Liệu Học Nuxt
 
-> **Phiên bản:** Nuxt 4 (v4.5.2) | **Framework:** Vue 3.5 | **Yêu cầu:** Biết Vue cơ bản
+> **Mục tiêu:** Hướng dẫn học Nuxt từ cơ bản đến nâng cao.
+
+## 🎯 Mục Tiêu Học Tập
+
+Sau khi hoàn thành tài liệu này, bạn sẽ có thể:
+
+- ✅ Xây dựng ứng dụng Nuxt từ đầu
+- ✅ Hiểu và sử dụng Composition API
+- ✅ Tạo và quản lý routes
+- ✅ Fetch data từ API
+- ✅ Quản lý state với Pinia
+- ✅ Debug và fix lỗi thường gặp
 
 ---
 
-## 🎯 Mục Tiêu Bộ Tài Liệu
+## 📚 Cấu Trúc Tài Liệu
 
-Bộ tài liệu này được thiết kế **RIÊNG CHO** người hoàn toàn mới về Nuxt, đã biết Vue cơ bản:
+```
+beginner-document/
+│
+├── 📁 00-prerequisites/       # Kiến thức cần có trước
+│   ├── 01-vue3-composition-api.md  # Vue 3 Composition API
+│   ├── 02-node-basics.md           # Node.js cơ bản
+│   └── 03-vscode-setup.md          # Cài đặt VS Code
+│
+├── 📁 01-getting-started/     # Bắt đầu
+│   ├── 01-installation.md     # Cài đặt Nuxt
+│   ├── 02-first-app.md        # Tạo ứng dụng đầu tiên
+│   └── 03-nuxt-structure.md   # Cấu trúc Nuxt
+│
+├── 📁 02-core-concepts/       # Khái niệm cốt lõi
+│   ├── 01-auto-imports.md     # Auto-imports
+│   ├── 02-components.md       # Components & Props
+│   ├── 03-routing-basics.md   # Routing cơ bản
+│   ├── 04-routing-advanced.md # Routing nâng cao
+│   ├── 05-middleware.md       # Middleware
+│   ├── 06-data-fetching.md    # Data Fetching
+│   └── 07-state-management.md # State Management
+│
+├── 📁 03-debugging/           # Debugging
+│   ├── 01-common-errors.md    # Lỗi thường gặp
+│   ├── 02-devtools-guide.md   # Hướng dẫn DevTools
+│   └── 03-debugging-tips.md   # Mẹo debug
+│
+├── 📁 04-migration/           # Migration
+│   ├── 01-vue2-to-nuxt.md    # Vue 2 → Nuxt
+│   ├── 02-nuxt3-to-nuxt4.md  # Nuxt 3 → Nuxt 4
+│   └── 03-common-gotchas.md  # Những bẫy thường gặp
+│
+├── 📁 05-exercises/           # Bài tập
+│   └── README.md             # Hướng dẫn
+│
+├── 📁 pinia/                  # Pinia State Management
+│   ├── 01-overview.md         # Giới thiệu Pinia
+│   ├── 02-store-structure.md # Cấu trúc Store
+│   ├── 03-ssr-hydration.md   # SSR & Hydration
+│   ├── 04-advanced-techniques.md # Kỹ thuật nâng cao
+│   ├── 05-data-flow.md       # Luồng dữ liệu
+│   ├── 06-exercises.md        # Bài tập
+│   └── README.md             # Hướng dẫn
+│
+├── 📁 server/                 # Server Routes
+│   ├── 01-server-routes.md    # API Endpoints
+│   ├── 02-database-integration.md # Database
+│   ├── 03-authentication.md   # Authentication
+│   └── README.md             # Hướng dẫn
+│
+├── 📁 route/                  # Routing Module
+│   ├── 01-overview.md        # Tổng quan
+│   ├── 02-basic-routes.md     # Routes cơ bản
+│   ├── 03-nested-routes.md   # Nested routes
+│   ├── 04-navigation.md      # Navigation
+│   ├── 05-middleware.md      # Middleware
+│   ├── 06-advanced.md        # Advanced
+│   ├── 07-exercises.md       # Bài tập
+│   └── README.md             # Hướng dẫn
+│
+├── 📁 vue3/                   # Vue 3 Deep Dive
+│   ├── 01-reactivity.md      # Reactive System
+│   ├── 02-lifecycle.md       # Lifecycle Hooks
+│   ├── 03-watchers.md        # Watchers
+│   ├── 04-computed.md        # Computed Properties
+│   ├── 05-templates.md       # Templates
+│   └── README.md             # Hướng dẫn
+│
+└── 📁 quiz/                  # Quiz & Projects
+    ├── 01-questions.md       # Câu hỏi thường gặp
+    ├── 02-projects.md        # Ý tưởng project
+    └── README.md             # Hướng dẫn
+```
+
+---
+
+## 🚀 Lộ Trình Học
+
+### Tuần 1: Cơ Bản
+1. [Vue 3 Composition API](../00-prerequisites/01-vue3-composition-api.md)
+2. [Node.js Basics](../00-prerequisites/02-node-basics.md)
+3. [VS Code Setup](../00-prerequisites/03-vscode-setup.md)
+4. [Nuxt Installation](../01-getting-started/01-installation.md)
+5. [First Nuxt App](../01-getting-started/02-first-app.md)
+
+### Tuần 2: Core Concepts
+1. [Nuxt Structure](../01-getting-started/03-nuxt-structure.md)
+2. [Auto-imports](../02-core-concepts/01-auto-imports.md)
+3. [Components & Props](../02-core-concepts/02-components.md)
+4. [Routing Basics](../02-core-concepts/03-routing-basics.md)
+5. [Routing Advanced](../02-core-concepts/04-routing-advanced.md)
+
+### Tuần 3: State & Data
+1. [Middleware](../02-core-concepts/05-middleware.md)
+2. [Data Fetching](../02-core-concepts/06-data-fetching.md)
+3. [State Management](../02-core-concepts/07-state-management.md)
+4. [Pinia Overview](../pinia/01-overview.md)
+5. [Pinia Store Structure](../pinia/02-store-structure.md)
+
+### Tuần 4: Server & Advanced
+1. [Server Routes](../server/01-server-routes.md)
+2. [Database Integration](../server/02-database-integration.md)
+3. [Authentication](../server/03-authentication.md)
+4. [Common Errors](../03-debugging/01-common-errors.md)
+5. [Migration Guide](../04-migration/01-vue2-to-nuxt.md)
+
+---
+
+## 📖 Cách Đọc Tài Liệu
+
+### Quy ước trong tài liệu
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    TRƯỚC KHI HỌC NUXT                                │
+│                    DIAGRAM - Giải thích khái niệm                   │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  ✅ Bạn ĐÃ BIẾT:                                                 │
-│     ├── HTML, CSS, JavaScript cơ bản                              │
-│     ├── Vue 3 cơ bản (components, directives)                     │
-│     ├── Biết dùng npm/yarn/pnpm                                    │
-│     └── Hiểu khái niệm reactive data                              │
-│                                                                     │
-│  ⏸️ Nếu bạn CHƯA biết Vue, học Vue trước!                        │
-│     → Xem: vuejs.org → Getting Started                            │
-│                                                                     │
-│  📚 Tài liệu này GIẢ ĐỊNH bạn đã biết Composition API cơ bản   │
-│     → Nếu chưa, xem: [00-prerequisites/01-vue3-composition-api.md]│
+│  Nội dung giải thích...                                             │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
----
-
-## 📚 Cấu Trúc Tài Liệu Mới
-
+```vue
+<!-- CODE EXAMPLE - Code mẫu -->
+<template>
+  <div>{{ message }}</div>
+</template>
 ```
-📁 docs/
-│
-├── 📁 00-prerequisites/           ← KIẾN THỨC CẦN CÓ
-│   ├── 📄 01-vue3-composition-api.md   ← [QUAN TRỌNG] Vue Composition API
-│   ├── 📄 02-node-basics.md           ← Kiến thức Node.js cơ bản
-│   └── 📄 03-vscode-setup.md          ← Cài đặt VS Code cho Nuxt
-│
-├── 📁 01-getting-started/        ← BẮT ĐẦU
-│   ├── 📄 01-installation.md           ← Cài đặt Nuxt
-│   ├── 📄 02-first-app.md             ← [MỚI] Hello World step-by-step
-│   └── 📄 03-nuxt-structure.md       ← Giải thích cấu trúc thư mục
-│
-├── 📁 02-core-concepts/         ← KIẾN THỨC CỐT LÕI
-│   ├── 📄 01-auto-imports.md          ← Auto-imports & script setup
-│   ├── 📄 02-components.md             ← Components & Props
-│   ├── 📄 03-routing-basics.md        ← [MỚI] Routing đơn giản
-│   ├── 📄 04-routing-advanced.md      ← Nested routes & Layouts
-│   ├── 📄 05-middleware.md             ← Middleware & Auth
-│   ├── 📄 06-data-fetching.md         ← Data fetching & SSR
-│   └── 📄 07-state-management.md       ← State: ref vs useState vs Pinia
-│
-├── 📁 03-debugging/              ← [MỚI] DEBUG & TROUBLESHOOTING
-│   ├── 📄 01-common-errors.md         ← Lỗi thường gặp
-│   ├── 📄 02-devtools-guide.md         ← Hướng dẫn Nuxt DevTools
-│   └── 📄 03-debugging-tips.md        ← Mẹo debug
-│
-├── 📁 04-migration/              ← [MỚI] MIGRATION GUIDES
-│   ├── 📄 01-vue2-to-nuxt.md          ← Từ Vue 2 lên Nuxt
-│   ├── 📄 02-nuxt3-to-nuxt4.md        ← Từ Nuxt 3 lên Nuxt 4
-│   └── 📄 03-common-gotchas.md        ← Những bẫy thường gặp
-│
-├── 📁 05-exercises/              ← BÀI TẬP THỰC HÀNH
-│   ├── 📄 01-beginner/               ← [MỚI] Bài tập cho người mới
-│   ├── 📄 02-intermediate/            ← Bài tập trung bình
-│   └── 📄 03-advanced/                ← Bài tập nâng cao
-│
-├── 📁 route/                     ← ROUTING (NÂNG CAO)
-│   └── ... (giữ nguyên)
-│
-├── 📁 pinia/                     ← PINIA STATE MANAGEMENT
-│   └── ... (giữ nguyên)
-│
-└── 📄 README.md (this file)
+
+```typescript
+// TERMINAL - Lệnh terminal
+npm run dev
 ```
+
+> **💡 TIP** - Mẹo hữu ích
+
+> **⚠️ WARNING** - Cảnh báo quan trọng
+
+> **✅ GOOD** - Practice tốt
+
+> **❌ BAD** - Practice không nên làm
 
 ---
 
-## 🚀 Lộ Trình Học Đề Xuất
+## 🔧 Yêu Cầu Hệ Thống
 
-### Dành cho người hoàn toàn mới (4-6 tuần)
+### Software cần thiết
 
-```
-TUẦN 1: Prerequisites & Setup
-├── Day 1-2: Vue 3 Composition API (nếu chưa biết)
-├── Day 3-4: Cài đặt Nuxt + Hello World
-└── Day 5-7: Cấu trúc thư mục + Auto-imports
+| Software | Phiên bản tối thiểu | Ghi chú |
+|----------|---------------------|---------|
+| Node.js | 18.0.0+ | LTS recommended |
+| npm | 9.0.0+ | Hoặc Bun/pnpm |
+| VS Code | Latest | Vue extension |
+| Git | Latest | Optional |
 
-TUẦN 2: Core Concepts
-├── Day 8-9: Components & Props
-├── Day 10-11: Routing cơ bản
-└── Day 12-14: Layouts & Middleware
+### Extensions khuyến nghị
 
-TUẦN 3: Data & State
-├── Day 15-17: Data Fetching
-├── Day 18-20: State Management
-└── Day 21: Debugging basics
-
-TUẦN 4: Practice
-├── Day 22-24: Bài tập Beginner
-├── Day 25-28: Mini project
-└── Tuần 5-6: Ôn tập + Project thực tế
-```
-
-### Thời gian đọc ước tính
-
-| Phần | Thời gian | Ghi chú |
-|------|------------|----------|
-| Prerequisites | ~2 giờ | Quan trọng nếu chưa biết Composition API |
-| Getting Started | ~2 giờ | Làm theo step-by-step |
-| Core Concepts | ~8 giờ | Đọc + thực hành |
-| Debugging | ~1 giờ | Tham khảo khi cần |
-| Migration | ~1 giờ | Tham khảo khi cần |
-| **Tổng** | **~14 giờ** | |
+- Vue - Official (Volar)
+- Nuxt
+- ESLint
+- Prettier
 
 ---
 
-## 🎓 Học Theo Cách Hiệu Quả
+## ❓ Cần Hỗ Trợ?
 
-### 1. Đọc → Hiểu → Code
+### Tài liệu tham khảo
+- [Nuxt Docs](https://nuxt.com/docs)
+- [Vue Docs](https://vuejs.org/docs)
+- [Pinia Docs](https://pinia.vuejs.org)
+
+### Cộng đồng
+- [Nuxt Discord](https://discord.gg/nuxt)
+- [GitHub Discussions](https://github.com/nuxt/nuxt/discussions)
+- [Stack Overflow](https://stackoverflow.com/questions/tagged/nuxt)
+
+---
+
+## 📝 Đóng Góp
+
+Nếu bạn phát hiện lỗi hoặc muốn cải thiện tài liệu, vui lòng:
+1. Fork repository
+2. Tạo branch mới
+3. Thực hiện thay đổi
+4. Tạo Pull Request
+
+---
+
+## 📄 License
+
+MIT License - Tự do sử dụng và chia sẻ!
+
+---
+
+## 🎯 Mục Tiêu Hoàn Thành
 
 ```
-1. Đọc lý thuyết (5-10 phút)
-   ↓
-2. Copy code và chạy thử (10-15 phút)
-   ↓
-3. Tự viết lại từ đầu (15-20 phút)
-   ↓
-4. Thay đổi code và observe kết quả (10 phút)
-   ↓
-5. Ghi chú lại điều mới học
-```
-
-### 2. Đừng Nhảy Cóc
-
-```
-❌ SAI: Đọc nhanh qua rồi nhảy sang phần khác
-
-✅ ĐÚNG:
-1. Hoàn thành prerequisites trước
-2. Làm theo Hello World step-by-step
-3. Hiểu từng khái niệm trước khi qua phần mới
-4. Làm bài tập trước khi học nâng cao
-```
-
-### 3. Debug Thường Xuyên
-
-```
-✅ Mỗi khi code không chạy:
-1. Đọc lỗi trong terminal
-2. Copy lỗi → Google
-3. Xem phần Debugging trong tài liệu
-4. Hỏi trong community nếu bí
+□ Đã cài đặt Nuxt thành công
+□ Hiểu Composition API
+□ Tạo được pages và routes
+□ Sử dụng được components
+□ Fetch data từ API
+□ Quản lý state với Pinia
+□ Tạo được API endpoints
+□ Debug được lỗi thường gặp
+□ Hoàn thành ít nhất 1 project
 ```
 
 ---
 
-## 🔗 Tài Liệu Tham Khảo
-
-| Nguồn | Link |
-|--------|------|
-| Nuxt Docs | [nuxt.com/docs](https://nuxt.com/docs) |
-| Vue 3 Docs | [vuejs.org/guide](https://vuejs.org/guide) |
-| Vue Composition API | [vuejs.org/guide/extras/composition-api-faq](https://vuejs.org/guide/extras/composition-api-faq) |
-| Pinia | [pinia.vuejs.org](https://pinia.vuejs.org/) |
-| Nuxt DevTools | [devtools.nuxt.com](https://devtools.nuxt.com) |
-
----
-
-## ❓ FAQ - Câu Hỏi Thường Gặp
-
-**Q: Tôi chưa biết Vue, có học được Nuxt không?**
-> A: Không! Học Vue 3 trước (đặc biệt Composition API). Nuxt build trên Vue, nên phải hiểu Vue.
-
-**Q: Tôi dùng Vue 2, có học được Nuxt 4 không?**
-> A: Có, nhưng nên học Vue 3 Composition API trước. Xem [Migration Guide](04-migration/01-vue2-to-nuxt.md).
-
-**Q: Có cần TypeScript không?**
-> A: Không bắt buộc, nhưng khuyến khích. Nuxt hỗ trợ TypeScript mặc định.
-
-**Q: Dùng npm, yarn hay pnpm?**
-> A: Tất cả đều được. Pnpm nhanh hơn, Bun nhanh nhất.
-
-**Q: Học xong có làm được gì?**
-> A: Static sites, blogs, e-commerce, SaaS apps, dashboards, APIs...
-
----
-
-## ✅ Checklist Trước Khi Bắt Đầu
-
-```
-□ Đã biết HTML, CSS, JavaScript cơ bản
-□ Đã biết Vue 3 cơ bản (components, directives)
-□ Đã hiểu Composition API (ref, computed, watch)
-□ Đã cài Node.js 18+
-□ Đã cài VS Code
-□ Đã đọc Prerequisites section
-```
-
----
-
-**Bạn đã sẵn sàng? Bắt đầu từ [00-prerequisites/01-vue3-composition-api.md](00-prerequisites/01-vue3-composition-api.md)**
-
----
-
-*Lần cập nhật: 2024 | Phiên bản: Nuxt 4*
+**Chúc bạn học tốt! 🚀**

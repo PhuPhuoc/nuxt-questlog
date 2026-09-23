@@ -13,7 +13,7 @@
 
 ## 1. Node.js là gì?
 
-### Định nghĩa đơn giản
+### 1.1 Định nghĩa
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -32,15 +32,25 @@
 │  ├── Node cung cấp: File system, Network, OS                      │
 │  └── Ví dụ: fs.readFile(), http.createServer()                  │
 │                                                                     │
-│  NUXT CẦN NODE.JS ĐỂ:                                            │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 1.2 Nuxt Cần Node.js Để
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    NUXT CẦN NODE.JS ĐỂ                              │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
 │  ├── Chạy development server                                       │
 │  ├── Build production app                                          │
-│  └── Xử lý SSR (Server-Side Rendering)                            │
+│  ├── Xử lý SSR (Server-Side Rendering)                            │
+│  └── Chạy Nuxt CLI (nuxi)                                         │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Kiểm tra Node.js đã cài chưa
+### 1.3 Kiểm tra Node.js
 
 ```bash
 # Kiểm tra phiên bản Node.js
@@ -53,18 +63,18 @@ npm -v
 # Chọn LTS version (bản ổn định)
 ```
 
-### Phiên bản Node.js khuyến nghị
+### 1.4 Phiên bản Node.js khuyến nghị
 
 | Nuxt Version | Node.js tối thiểu |
 |-------------|-------------------|
-| Nuxt 4 | Node.js 18+ |
+| **Nuxt 4** | Node.js 18+ |
 | Nuxt 3 | Node.js 14+ |
 
 ---
 
 ## 2. npm/yarn/pnpm là gì?
 
-### Package Manager là gì?
+### 2.1 Package Manager là gì?
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -78,19 +88,18 @@ npm -v
 │  ├── Vue          → Framework                                       │
 │  ├── Nuxt         → Framework (built on Vue)                      │
 │  ├── Pinia        → State management                               │
-│  ├── Tailwind CSS → CSS framework                                  │
-│  └── Axios        → HTTP client                                    │
+│  └── axios        → HTTP client                                    │
 │                                                                     │
 │  Package Manager làm gì?                                            │
 │  ├── Cài đặt packages (download + install)                       │
 │  ├── Gỡ packages                                                   │
 │  ├── Quản lý phiên bản                                            │
-│  └── Tự động cài dependencies (packages mà package đó cần)    │
+│  └── Tự động cài dependencies                                     │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### So sánh npm vs yarn vs pnpm
+### 2.2 So Sánh npm vs yarn vs pnpm
 
 | Tính năng | npm | yarn | pnpm |
 |-----------|-----|------|------|
@@ -99,25 +108,7 @@ npm -v
 | **Mặc định** | Node.js đi kèm | Facebook | Shop |
 | **Khuyến nghị Nuxt** | ✅ | ✅ | ✅ |
 
-### Cách cài đặt
-
-```bash
-# npm - đi kèm Node.js (đã có sẵn)
-# Kiểm tra:
-npm -v
-
-# yarn - cài thêm
-npm install -g yarn
-# Hoặc: corepack enable (Node.js 16+)
-
-# pnpm - cài thêm
-npm install -g pnpm
-
-# Bun - cài thêm (Nhanh nhất!)
-# Xem hướng dẫn: https://bun.sh
-```
-
-### Khuyến nghị cho Nuxt
+### 2.3 Khuyến nghị cho Nuxt
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -137,13 +128,28 @@ npm install -g pnpm
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
+### 2.4 Cài đặt Bun
+
+```bash
+# Windows (PowerShell)
+irm bun.sh/install.ps1 | iex
+
+# Mac/Linux
+curl -fsSL https://bun.sh/install | bash
+
+# Kiểm tra
+bun --version
+```
+
 ---
 
 ## 3. package.json
 
-### package.json là gì?
+### 3.1 package.json là gì?
 
-`package.json` là file chứa thông tin về project của bạn:
+`package.json` là file chứa thông tin về project và dependencies.
+
+### 3.2 Ví dụ package.json
 
 ```json
 {
@@ -169,25 +175,18 @@ npm install -g pnpm
 }
 ```
 
-### Giải thích từng phần
+### 3.3 Giải thích từng phần
 
-```json
-{
-  "name": "my-app",           // Tên project (không có khoảng trắng)
-  "version": "1.0.0",         // Phiên bản (semantic versioning)
-  "scripts": {
-    "dev": "nuxt dev"        // Chạy: npm run dev
-  },
-  "dependencies": {           // Packages CẦN ĐỂ CHẠY
-    "nuxt": "^4.0.0"
-  },
-  "devDependencies": {        // Packages CHỈ CẦN KHI DEV
-    "typescript": "^5.0.0"
-  }
-}
-```
+| Phần | Ý nghĩa |
+|------|----------|
+| `name` | Tên project (không có khoảng trắng) |
+| `version` | Phiên bản (semantic versioning) |
+| `type: "module"` | Dùng ES modules (bắt buộc cho Nuxt 4) |
+| `scripts` | Các lệnh chạy được |
+| `dependencies` | Packages CẦN ĐỂ CHẠY (production) |
+| `devDependencies` | Packages CHỈ CẦN KHI DEV |
 
-### Scripts thường dùng
+### 3.4 Scripts thường dùng
 
 ```bash
 # Development
@@ -196,7 +195,7 @@ npm run dev -- --port 8080  # Chạy port khác
 
 # Build
 npm run build        # Build production app
-npm run generate    # Generate static site (SSG)
+npm run generate     # Generate static site (SSG)
 
 # Production
 npm run preview     # Preview production build
@@ -210,7 +209,7 @@ npm run test        # Chạy tests
 
 ## 4. Cài Đặt và Chạy Packages
 
-### Cài đặt package
+### 4.1 Cài đặt package
 
 ```bash
 # Cú pháp chung
@@ -226,11 +225,12 @@ npm install nuxt@latest
 # Cài như dev dependency (chỉ cần khi dev)
 npm install -D @nuxt/devtools
 
-# Cài global (dùng ở mọi project)
-npm install -g nuxt
+# Cài với Bun (nhanh hơn)
+bun add nuxt
+bun add -d @nuxt/devtools
 ```
 
-### package-lock.json và node_modules
+### 4.2 Cấu trúc sau khi cài
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -252,7 +252,7 @@ npm install -g nuxt
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Sự khác biệt dependencies vs devDependencies
+### 4.3 dependencies vs devDependencies
 
 ```json
 {
@@ -265,13 +265,13 @@ npm install -g nuxt
   "devDependencies": {
     // CHỈ cần khi PHÁT TRIỂN
     "@nuxt/devtools": "^2.0.0", // ❌ Không cần khi deploy
-    "typescript": "^5.0.0",     // ❌ Không cần khi deploy
+    "typescript": "^5.0.0",       // ❌ Không cần khi deploy
     "vitest": "^1.0.0"          // ❌ Không cần khi deploy
   }
 }
 ```
 
-### Khi nào dùng --save-dev?
+### 4.4 Khi nào dùng --save-dev?
 
 ```bash
 # Khi cài tool cho development (linters, testers, builders)
@@ -305,8 +305,8 @@ npm install axios
 │  node -v           → Kiểm tra Node version                         │
 │  npm install       → Cài packages từ package.json                  │
 │  npm install <pkg> → Cài một package                               │
-│  npm run dev      → Chạy development server                        │
-│  npm run build     → Build production                              │
+│  npm run dev      → Chạy development server                       │
+│  npm run build    → Build production                              │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -317,4 +317,4 @@ npm install axios
 
 → [03-vscode-setup.md](03-vscode-setup.md) - Cài đặt VS Code cho Nuxt
 
-hoặc → [Bỏ qua](01-getting-started/01-installation.md) nếu đã hiểu rõ
+hoặc → [Bỏ qua](../01-getting-started/01-installation.md) nếu đã hiểu rõ

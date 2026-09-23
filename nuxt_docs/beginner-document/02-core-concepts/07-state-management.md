@@ -1,216 +1,175 @@
-# State Management
+# State Management - Quản Lý Trạng Thái
 
-> **Mục tiêu:** Hiểu cách quản lý state trong Nuxt 4 với ref, useState, và Pinia.
+> **Mục tiêu:** Hiểu cách quản lý state trong Nuxt với ref, useState, và Pinia.
 
 ## Mục lục
 
-1. [State là gì?](#1-state-là-gì)
+1. [Tổng quan State Management](#1-tổng-quan-state-management)
 2. [ref() - Local State](#2-ref---local-state)
 3. [useState() - Shared State](#3-usestate---shared-state)
-4. [Pinia - Global Store](#4-pinia---global-store)
-5. [Khi nào dùng cái nào?](#5-khi-nào-dùng-cái-nào)
+4. [Pinia Store](#4-pinia-store)
+5. [Khi nào dùng gì?](#5-khi-nào-dùng-gì)
 
 ---
 
-## 1. State là gì?
+## 1. Tổng Quan State Management
 
-### 1.1 Dùng để làm gì?
-
-**State = Dữ liệu mà app LƯU TRỮ và QUẢN LÝ.**
+### 1.1 Các loại State
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    STATE - GIẢI THÍCH ĐƠN GIẢN                      │
+│                    STATE TYPES                                         │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  State = Dữ liệu mà app LƯU TRỮ và QUẢN LÝ                     │
+│  1. LOCAL STATE (ref)                                              │
+│     ├── Chỉ trong 1 component                                      │
+│     └── Ví dụ: Form input, local toggle                            │
 │                                                                     │
-│  Ví dụ:                                                            │
-│  ├── User đang đăng nhập                                         │
-│  ├── Giỏ hàng có bao nhiêu items                                │
-│  ├── Form đang nhập dữ liệu gì                                  │
-│  ├── Toggle sidebar đang mở hay đóng                            │
+│  2. SHARED STATE (useState)                                        │
+│     ├── Chia sẻ giữa components                                   │
+│     ├── SSR-safe                                                   │
+│     └── Ví dụ: Theme, user preferences                             │
+│                                                                     │
+│  3. GLOBAL STATE (Pinia)                                           │
+│     ├── Toàn app                                                   │
+│     ├── Business logic                                             │
+│     └── Ví dụ: Auth, Cart, Products                               │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### 1.2 Các Loại State trong Nuxt
+### 1.2 So sánh nhanh
 
-Nuxt có 3 cách quản lý state, từ đơn giản đến phức tạp:
-
-| Loại | Phạm vi | Dùng khi | Ví dụ |
-|------|---------|----------|-------|
-| `ref()` | 1 component | State đơn giản, tạm thời | Form inputs, local toggles |
-| `useState()` | Toàn app (SSR-safe) | State chia sẻ, đơn giản | Theme, sidebar, notifications |
-| Pinia | Toàn app | State phức tạp, có logic | Auth, Cart, Products catalog |
+| Loại | Phạm vi | SSR | Actions | Best cho |
+|------|----------|-----|---------|----------|
+| `ref()` | 1 component | ✅ | ❌ | Local UI state |
+| `useState()` | App/request | ✅ | ❌ | Shared simple state |
+| Pinia Store | App | ✅ | ✅ | Complex state + logic |
 
 ---
 
 ## 2. ref() - Local State
 
-### 2.1 Dùng để làm gì?
-
-**`ref()` = Tạo reactive state CHỈ trong 1 component.**
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    KHI NÀO DÙNG ref()?                              │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  ✅ Dùng ref() khi:                                               │
-│  ├── State CHỈ trong 1 component                                  │
-│  ├── State ĐƠN GIẢN (primitive values)                          │
-│  ├── State TẠM THỜI (không cần chia sẻ)                        │
-│  └── Ví dụ:                                                       │
-│      ├── Form input values                                       │
-│      ├── Local toggle state                                      │
-│      ├── Animation state                                         │
-│      └── Temporary loading state                                  │
-│                                                                     │
-│  ❌ KHÔNG dùng ref() khi:                                        │
-│  ├── State cần chia sẻ giữa components                         │
-│  ├── State cần persist (lưu lại khi reload)                    │
-│  └── State phức tạp với business logic                         │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### 2.2 Có Sẵn Hay Cần Custom?
-
-**`ref()` LÀ COMPOSABLE CÓ SẴN CỦA VUE 3 + NUXT 4!**
-
-- Auto-imported
-- Không cần import từ 'vue'
-
-### 2.3 Ví dụ: Form State
+### 2.1 Cú pháp
 
 ```vue
 <script setup lang="ts">
-// Local state - chỉ dùng trong component này
-const form = ref({
-  name: '',
-  email: '',
-  message: ''
-})
-
-const isSubmitting = ref(false)
-const errors = ref<Record<string, string>>({})
-
-async function handleSubmit() {
-  // Validate
-  errors.value = {}
-
-  if (!form.value.name) {
-    errors.value.name = 'Name is required'
-  }
-
-  if (!form.value.email) {
-    errors.value.email = 'Email is required'
-  }
-
-  if (Object.keys(errors.value).length > 0) {
-    return
-  }
-
-  // Submit
-  isSubmitting.value = true
-  try {
-    await $fetch('/api/contact', {
-      method: 'POST',
-      body: form.value
-    })
-    alert('Gửi thành công!')
-  } finally {
-    isSubmitting.value = false
-  }
-}
+// Tạo reactive state
+const count = ref(0)
+const name = ref('Nam')
+const isVisible = ref(true)
+const user = ref({ name: 'Nam', age: 25 })
 </script>
 ```
 
-### 2.4 Ví dụ: Local Toggle
+### 2.2 Đọc và ghi
 
 ```vue
 <script setup lang="ts">
-const isSidebarOpen = ref(false)
-const isModalOpen = ref(false)
+const count = ref(0)
 
-function toggleSidebar() {
-  isSidebarOpen.value = !isSidebarOpen.value
+// Đọc - trong script dùng .value
+console.log(count.value)  // 0
+
+// Ghi - trong script dùng .value
+count.value = 10
+
+// Tăng giảm
+count.value++
+count.value--
+</script>
+
+<template>
+  <!-- Trong template KHÔNG cần .value -->
+  <p>{{ count }}</p>
+</template>
+```
+
+### 2.3 Ví dụ: Local Counter
+
+```vue
+<!-- components/Counter.vue -->
+<script setup lang="ts">
+const count = ref(0)
+
+const doubled = computed(() => count.value * 2)
+
+function increment() {
+  count.value++
+}
+
+function decrement() {
+  count.value--
+}
+
+function reset() {
+  count.value = 0
 }
 </script>
+
+<template>
+  <div class="counter">
+    <p>Count: {{ count }}</p>
+    <p>Doubled: {{ doubled }}</p>
+    <button @click="decrement">-</button>
+    <button @click="reset">Reset</button>
+    <button @click="increment">+</button>
+  </div>
+</template>
 ```
 
 ---
 
 ## 3. useState() - Shared State
 
-### 3.1 Dùng để làm gì?
+### 3.1 Cú pháp
 
-**`useState()` = Tạo reactive state CHIA SẺ giữa các components, SSR-safe.**
+```typescript
+// Tạo shared state
+const userName = useState('userName', () => 'Nam')
+
+// Đọc và ghi như ref
+userName.value = 'Minh'
+console.log(userName.value)
+```
+
+### 3.2 So sánh với ref
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    KHI NÀO DÙNG useState()?                         │
+│                    ref() vs useState()                                 │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  ✅ Dùng useState() khi:                                          │
-│  ├── State CẦN CHIA SẺ giữa components                           │
-│  ├── State ĐƠN GIẢN (không cần business logic)                    │
-│  ├── State CẦN SSR-safe (shared across server/client)             │
-│  └── Ví dụ:                                                       │
-│      ├── Theme (light/dark)                                      │
-│      ├── Sidebar open/close                                      │
-│      ├── Notification queue                                      │
-│      └── User preferences (simple)                               │
+│  ref()                                                           │
+│  ├── Component-scoped                                             │
+│  ├── Mỗi component có bản copy riêng                              │
+│  └── State mất khi component unmount                              │
 │                                                                     │
-│  ❌ KHÔNG dùng useState() khi:                                   │
-│  ├── State cần complex logic/actions                             │
-│  ├── State cần persist lâu dài                                  │
-│  └── State cần devtools debugging                                │
+│  useState()                                                       │
+│  ├── Request-scoped (SSR)                                         │
+│  ├── Shared giữa components trong cùng request                    │
+│  ├── Persistent across renders                                     │
+│  └── SSR-safe (serialize/deserialize)                             │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### 3.2 Có Sẵn Hay Cần Custom?
+### 3.3 Ví dụ: Theme
 
-**`useState()` LÀ COMPOSABLE CÓ SẴN CỦA NUXT 4!**
-
-- Auto-imported
-- SSR-safe (state được serialize từ server → deserialize trên client)
-- Không bị pollution giữa các requests
-
-### 3.3 Cú Pháp Cơ Bản
-
-```ts
-// Tạo state - key phải unique!
-const count = useState<number>('count', () => 0)
-
-// Đọc state
-console.log(count.value) // 0
-
-// Ghi state
-count.value = 10
-
-// Computed state
-const doubleCount = useState<number>('doubleCount', () => count.value * 2)
-```
-
-### 3.4 Ví dụ: Theme Toggle
-
-```ts
-// app/composables/useTheme.ts
+```typescript
+// composables/useTheme.ts
 export const useTheme = () => {
-  // State được share giữa tất cả components
+  // Shared state - cùng theme cho cả app
   const theme = useState<'light' | 'dark'>('theme', () => 'light')
-
+  
   const isDark = computed(() => theme.value === 'dark')
-
+  
   function toggleTheme() {
     theme.value = theme.value === 'light' ? 'dark' : 'light'
   }
-
+  
   return {
-    theme,
+    theme: readonly(theme),
     isDark,
     toggleTheme
   }
@@ -218,161 +177,200 @@ export const useTheme = () => {
 ```
 
 ```vue
-<!-- Header.vue -->
+<!-- components/ThemeToggle.vue -->
 <script setup lang="ts">
-const { theme, isDark, toggleTheme } = useTheme()
+const { theme, toggleTheme } = useTheme()
 </script>
 
 <template>
-  <header :class="{ dark: isDark }">
-    <button @click="toggleTheme">
-      {{ isDark ? '🌙' : '☀️' }}
-    </button>
-  </header>
+  <button @click="toggleTheme">
+    {{ theme === 'light' ? '🌙' : '☀️' }}
+  </button>
 </template>
 ```
 
 ```vue
-<!-- Sidebar.vue -->
+<!-- components/Sidebar.vue -->
 <script setup lang="ts">
-// Cùng theme state!
 const { theme, isDark } = useTheme()
 </script>
 
 <template>
   <aside :class="{ dark: isDark }">
-    Sidebar content
+    <!-- Sidebar content - dùng cùng theme -->
   </aside>
 </template>
 ```
 
-### 3.5 SSR Safety
+### 3.4 SSR Safety
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    useState SSR SAFETY                               │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  useState() tự động:                                            │
-│  1. Serialize state từ server                                   │
-│  2. Deserialize state trên client                               │
-│  3. Tránh pollution giữa các requests                          │
-│                                                                     │
-│  Ví dụ: User cart                                               │
-│  ────────────────────────                                         │
-│  Server: Mỗi user có cart riêng                                │
-│  Client: Hydrate từ server state                                 │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
+```typescript
+// useState tự động serialize state
+// Server: Serialize theme → HTML
+// Client: Deserialize → Hydrate
+
+// Điều này ngăn state pollution giữa users!
 ```
 
 ---
 
-## 4. Pinia - Global Store
+## 4. Pinia Store
 
-### 4.1 Dùng để làm gì?
+### 4.1 Setup Store (Khuyến nghị)
 
-**Pinia = Global store cho state PHỨC TẠP với business logic.**
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    KHI NÀO DÙNG PINIA?                             │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  ✅ Dùng Pinia khi:                                               │
-│  ├── State PHỨC TẠP với business logic                           │
-│  ├── State CẦN persist (lưu localStorage)                        │
-│  ├── State CẦN actions (async operations)                        │
-│  ├── State CẦN devtools debugging                                │
-│  ├── State TypeScript-heavy                                       │
-│  └── Ví dụ:                                                       │
-│      ├── Auth state (login, logout, token)                        │
-│      ├── Cart state (add, remove, checkout)                       │
-│      ├── User preferences (complex)                               │
-│      └── Products catalog (filter, sort, pagination)             │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### 4.2 Có Sẵn Hay Cần Custom?
-
-**PINIA LÀ PLUGIN ĐƯỢC KHUYẾN NGHỊ TRONG NUXT 4!**
-
-- Cần cài đặt: `@pinia/nuxt`
-- Auto-imported trong Nuxt
-- Devtools hỗ trợ tốt
-
-### 4.3 Setup Pinia
-
-```bash
-npm install @pinia/nuxt pinia
-```
-
-```ts
-// nuxt.config.ts
-export default defineNuxtConfig({
-  modules: ['@pinia/nuxt']
+```typescript
+// stores/counter.ts
+export const useCounterStore = defineStore('counter', () => {
+  // ===== STATE =====
+  const count = ref(0)
+  const history = ref<number[]>([])
+  
+  // ===== GETTERS =====
+  const doubled = computed(() => count.value * 2)
+  const average = computed(() => {
+    if (history.value.length === 0) return 0
+    return history.value.reduce((a, b) => a + b, 0) / history.value.length
+  })
+  
+  // ===== ACTIONS =====
+  function increment() {
+    count.value++
+    history.value.push(count.value)
+  }
+  
+  function decrement() {
+    count.value--
+    history.value.push(count.value)
+  }
+  
+  function reset() {
+    count.value = 0
+  }
+  
+  return {
+    // State
+    count,
+    history,
+    // Getters
+    doubled,
+    average,
+    // Actions
+    increment,
+    decrement,
+    reset
+  }
 })
 ```
 
-### 4.4 Tạo Store
+### 4.2 Sử dụng Store
 
-```ts
-// app/stores/auth.ts
+```vue
+<script setup lang="ts">
+// Auto-imported - không cần import!
+const counterStore = useCounterStore()
+</script>
+
+<template>
+  <div>
+    <p>Count: {{ counterStore.count }}</p>
+    <p>Doubled: {{ counterStore.doubled }}</p>
+    <p>Average: {{ counterStore.average }}</p>
+    
+    <button @click="counterStore.increment">+</button>
+    <button @click="counterStore.decrement">-</button>
+    <button @click="counterStore.reset">Reset</button>
+  </div>
+</template>
+```
+
+### 4.3 storeToRefs
+
+```vue
+<script setup lang="ts">
+import { storeToRefs } from 'pinia'
+
+const counterStore = useCounterStore()
+
+// ⚠️ SAI: Mất reactivity
+// const { count } = counterStore
+
+// ✅ ĐÚNG: Giữ reactivity
+const { count, doubled } = storeToRefs(counterStore)
+
+// Actions không cần storeToRefs
+const { increment, decrement, reset } = counterStore
+</script>
+
+<template>
+  <div>
+    <!-- count là ref, tự unwrap trong template -->
+    <p>Count: {{ count }}</p>
+    
+    <button @click="increment">+</button>
+    <button @click="decrement">-</button>
+    <button @click="reset">Reset</button>
+  </div>
+</template>
+```
+
+### 4.4 Auth Store Example
+
+```typescript
+// stores/auth.ts
 export const useAuthStore = defineStore('auth', () => {
   // State
   const user = ref<User | null>(null)
   const token = useCookie('auth_token')
-
+  
   // Getters
-  const isLoggedIn = computed(() => !!token.value && !!user.value)
+  const isAuthenticated = computed(() => !!token.value && !!user.value)
   const isAdmin = computed(() => user.value?.role === 'admin')
   const userName = computed(() => user.value?.name || 'Guest')
-
+  
   // Actions
-  async function login(email: string, password: string) {
+  async function login(credentials: LoginCredentials) {
     try {
-      const response = await $fetch('/api/auth/login', {
+      const response = await $fetch<{ user: User; token: string }>('/api/auth/login', {
         method: 'POST',
-        body: { email, password }
+        body: credentials
       })
-
+      
       token.value = response.token
       user.value = response.user
-
-      return { success: true }
+      
+      return response
     } catch (error) {
-      return { success: false, error }
+      console.error('Login failed:', error)
+      throw error
     }
   }
-
-  async function logout() {
-    token.value = null
+  
+  function logout() {
     user.value = null
-    await navigateTo('/login')
+    token.value = null
+    navigateTo('/login')
   }
-
+  
   async function fetchUser() {
     if (!token.value) return
-
+    
     try {
-      user.value = await $fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${token.value}` }
+      user.value = await $fetch<User>('/api/auth/me', {
+        headers: {
+          Authorization: `Bearer ${token.value}`
+        }
       })
     } catch {
       logout()
     }
   }
-
+  
   return {
-    // State
-    user,
+    user: readonly(user),
     token,
-    // Getters
-    isLoggedIn,
+    isAuthenticated,
     isAdmin,
     userName,
-    // Actions
     login,
     logout,
     fetchUser
@@ -380,257 +378,76 @@ export const useAuthStore = defineStore('auth', () => {
 })
 ```
 
-### 4.5 Sử Dụng Store
-
-```vue
-<script setup lang="ts">
-// Auto-imported - không cần import!
-const authStore = useAuthStore()
-
-// Đọc state
-console.log(authStore.userName)
-
-// Đọc getter
-if (authStore.isLoggedIn) {
-  console.log('Welcome!')
-}
-
-// Gọi action
-async function handleLogin() {
-  const result = await authStore.login(email, password)
-  if (result.success) {
-    navigateTo('/dashboard')
-  }
-}
-</script>
-```
-
-### 4.6 Destructure với storeToRefs
-
-```vue
-<script setup lang="ts">
-const authStore = useAuthStore()
-
-// ❌ SAI - Mất reactivity!
-const { user, isLoggedIn } = authStore
-
-// ✅ ĐÚNG - Giữ reactivity
-import { storeToRefs } from 'pinia'
-const { user, isLoggedIn } = storeToRefs(authStore)
-
-// Actions không cần storeToRefs
-const { login, logout } = authStore
-</script>
-```
-
-### 4.7 Cart Store Example
-
-```ts
-// app/stores/cart.ts
-interface CartItem {
-  id: number
-  name: string
-  price: number
-  image?: string
-  quantity: number
-}
-
-export const useCartStore = defineStore('cart', () => {
-  // State
-  const items = ref<CartItem[]>([])
-  const shippingFee = ref(30000)
-
-  // Getters
-  const itemCount = computed(() => items.value.length)
-  const subtotal = computed(() =>
-    items.value.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  )
-  const total = computed(() => subtotal.value + shippingFee.value)
-
-  // Actions
-  function addItem(product: Product, quantity = 1) {
-    const existing = items.value.find(item => item.id === product.id)
-
-    if (existing) {
-      existing.quantity += quantity
-    } else {
-      items.value.push({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.image,
-        quantity
-      })
-    }
-  }
-
-  function removeItem(productId: number) {
-    items.value = items.value.filter(item => item.id !== productId)
-  }
-
-  function updateQuantity(productId: number, quantity: number) {
-    const item = items.value.find(item => item.id === productId)
-    if (item) {
-      item.quantity = Math.max(0, quantity)
-      if (item.quantity === 0) {
-        removeItem(productId)
-      }
-    }
-  }
-
-  function clearCart() {
-    items.value = []
-  }
-
-  return {
-    items,
-    itemCount,
-    subtotal,
-    total,
-    addItem,
-    removeItem,
-    updateQuantity,
-    clearCart
-  }
-})
-```
-
 ---
 
-## 5. Khi Nào Dùng Cái Nào?
+## 5. Khi Nào Dùng Gì?
 
-### 5.1 So Sánh Nhanh
-
-| Loại | Khi nào | Ví dụ |
-|------|---------|-------|
-| `ref()` | Local, đơn giản | Form input, local toggle |
-| `useState()` | Shared, đơn giản | Theme, sidebar |
-| Pinia | Complex, logic | Auth, Cart, Products |
-
-### 5.2 Decision Tree
+### 5.1 Decision Tree
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    STATE MANAGEMENT DECISION TREE                   │
+│                    DECISION TREE                                       │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  State cần chia sẻ GIỮA CÁC components?                      │
-│         ↓                                                           │
-│    KHÔNG                                                         │
-│         ↓                                                           │
-│  Dùng ref() - Local state                                      │
-│                                                                     │
-│  ──────────────────────────────────────────────────────────────── │
-│                                                                     │
-│  State cần chia sẻ GIỮA CÁC components?                      │
-│         ↓                                                           │
-│    CÓ                                                             │
-│         ↓                                                           │
-│  State PHỨC TẠP với business logic?                           │
-│         ↓                                                           │
-│    CÓ → Dùng Pinia Store                                     │
-│         ↓                                                           │
-│    KHÔNG                                                        │
-│         ↓                                                           │
-│  State ĐƠN GIẢN, không cần persist?                         │
-│         ↓                                                           │
-│    CÓ → Dùng useState()                                     │
-│         ↓                                                           │
-│    KHÔNG → Dùng Pinia Store (cần persist)               │
+│  State chỉ trong 1 component?                                       │
+│         ↓                                                         │
+│      CÓ → ref()                                                   │
+│         ↓                                                         │
+│      KHÔNG                                                        │
+│         ↓                                                         │
+│  State nhỏ, đơn giản?                                             │
+│         ↓                                                         │
+│      CÓ → useState()                                              │
+│         ↓                                                         │
+│      KHÔNG                                                        │
+│         ↓                                                         │
+│  State phức tạp, cần actions/logic?                               │
+│         ↓                                                         │
+│      CÓ → Pinia Store                                             │
+│         ↓                                                         │
+│      KHÔNG                                                        │
+│         ↓                                                         │
+│  useState()                                                       │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### 5.3 Cases Thực Tế
+### 5.2 Examples
 
-```vue
-<!-- 1. Local state - ref() -->
-<script setup lang="ts">
-// Form input - chỉ trong 1 component
-const searchQuery = ref('')
-const isLoading = ref(false)
-</script>
+| Use Case | Solution |
+|----------|----------|
+| Form input state | `ref()` |
+| Modal visibility | `ref()` |
+| Theme preference | `useState()` |
+| Sidebar collapsed state | `useState()` |
+| User authentication | Pinia Store |
+| Shopping cart | Pinia Store |
+| Products list + filters | Pinia Store |
+| API data | `useFetch()` |
 
-<!-- 2. Shared simple state - useState() -->
-<script setup lang="ts">
-// app/composables/useUI.ts
-// Theme - chia sẻ giữa Header, Sidebar, etc.
-const sidebarOpen = useState<boolean>('sidebar', () => false)
-const notifications = useState<Notification[]>('notifications', () => [])
-</script>
-
-<!-- 3. Complex state - Pinia -->
-<script setup lang="ts">
-// Cart - có logic phức tạp
-const cart = useCartStore()
-const auth = useAuthStore()
-const products = useProductStore()
-</script>
-```
-
-### 5.4 So Sánh Chi Tiết
+### 5.3 Cheat Sheet
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    ref() vs useState() vs Pinia                     │
+│                    STATE MANAGEMENT CHEAT SHEET                        │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  ref():                                                          │
-│  ├── Phạm vi: 1 component                                        │
-│  ├── SSR: Safe (nhưng mỗi component có instance riêng)           │
-│  ├── Devtools: Không support native                               │
-│  └── Persistence: Không                                          │
+│  LOCAL STATE:                                                      │
+│  const count = ref(0)                                             │
 │                                                                     │
-│  useState():                                                     │
-│  ├── Phạm vi: Toàn app (shared)                                   │
-│  ├── SSR: ✅ Safe - serialize/deserialize tự động                │
-│  ├── Devtools: Có support                                       │
-│  └── Persistence: Không                                          │
+│  SHARED STATE:                                                     │
+│  const theme = useState('theme', () => 'light')                   │
 │                                                                     │
-│  Pinia:                                                          │
-│  ├── Phạm vi: Toàn app (shared)                                   │
-│  ├── SSR: ✅ Safe                                               │
-│  ├── Devtools: ✅ Full support (vue devtools)                    │
-│  ├── Persistence: ✅ Có plugins (@pinia-plugin-persistedstate)   │
-│  └── Logic: ✅ Actions, getters có logic phức tạp               │
+│  PINIA STORE:                                                      │
+│  // stores/counter.ts                                              │
+│  export const useCounterStore = defineStore('counter', () => {     │
+│    const count = ref(0)                                            │
+│    return { count }                                                │
+│  })                                                                │
 │                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 🎯 Tóm Tắt
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    STATE MANAGEMENT CHEAT SHEET                      │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  ref() - Local State:                                            │
-│  ├── const count = ref(0)                                        │
-│  ├── Chỉ trong 1 component                                       │
-│  ├── Dùng cho: form inputs, local toggles, temp states           │
-│  └── Auto-imported từ Vue                                        │
-│                                                                     │
-│  useState() - Shared State:                                       │
-│  ├── const theme = useState('theme', () => 'light')             │
-│  ├── Chia sẻ giữa components                                     │
-│  ├── SSR-safe (serialize/deserialize)                            │
-│  └── Dùng cho: theme, sidebar, notifications đơn giản          │
-│                                                                     │
-│  Pinia - Global Store:                                            │
-│  ├── export const useAuthStore = defineStore('auth', ...)         │
-│  ├── State + Getters + Actions                                   │
-│  ├── SSR-safe, Devtools, Plugins                                 │
-│  └── Dùng cho: auth, cart, products, complex features           │
-│                                                                     │
-│  setup Pinia:                                                    │
-│  ├── npm install @pinia/nuxt pinia                              │
-│  └── modules: ['@pinia/nuxt'] trong nuxt.config.ts              │
-│                                                                     │
-│  storeToRefs():                                                   │
-│  ├── const { user } = storeToRefs(authStore)                     │
-│  └── Giữ reactivity khi destructure                              │
+│  // Sử dụng                                                       │
+│  const store = useCounterStore()                                   │
+│  store.count++                                                     │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -639,8 +456,6 @@ const products = useProductStore()
 
 ## ▶️ Tiếp Theo
 
-→ [route/](../route/) - Routing nâng cao (chi tiết hơn)
+→ [03-debugging/01-common-errors.md](../03-debugging/01-common-errors.md) - Lỗi thường gặp
 
-hoặc → [pinia/](../pinia/) - Pinia chi tiết (chi tiết hơn)
-
-hoặc → [../00-prerequisites/01-vue3-composition-api.md](../00-prerequisites/01-vue3-composition-api.md) - Ôn lại Vue Composition API
+hoặc → [pinia/01-overview.md](../pinia/01-overview.md) - Pinia chi tiết

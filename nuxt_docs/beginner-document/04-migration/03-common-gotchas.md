@@ -1,216 +1,128 @@
-# Những Bẫy Thường Gặp
+# Common Gotchas - Những Bẫy Thường Gặp
 
-> **Mục tiêu:** Những lỗi phổ biến và cách tránh.
+> **Mục tiêu:** Biết những lỗi/phút lầm thường gặp và cách tránh.
 
 ## Mục lục
 
-1. [Component Naming](#1-component-naming)
-2. [Auto-import Gotchas](#2-auto-import-gotchas)
-3. [SSR Gotchas](#3-ssr-gotchas)
-4. [Pinia Gotchas](#4-pinia-gotchas)
-5. [TypeScript Gotchas](#5-typescript-gotchas)
+1. [SSR Gotchas](#1-ssr-gotchas)
+2. [Component Gotchas](#2-component-gotchas)
+3. [TypeScript Gotchas](#3-typescript-gotchas)
 
 ---
 
-## 1. Component Naming
+## 1. SSR Gotchas
 
-### ❌ Sai: kebab-case
+### 1.1 Window/document undefined
 
+```typescript
+// ❌ Lỗi: window is not defined
+
+// SAI
+const localStorage = window.localStorage
+
+// ✅ ĐÚNG
+if (import.meta.client) {
+  const localStorage = window.localStorage
+}
+
+// HOẶC dùng onMounted
+onMounted(() => {
+  // Chỉ chạy trên client
+})
 ```
-components/
-├── my-component.vue     ❌
-├── myComponent.vue      ❌
-└── my_component.vue    ❌
-```
 
-### ✅ Đúng: PascalCase
-
-```
-components/
-├── MyComponent.vue      ✅
-├── BaseButton.vue       ✅
-└── ui/
-    └── Modal.vue       ✅ → <UiModal>
-```
-
-### ⚠️ Lazy Components
+### 1.2 Hydration mismatch
 
 ```vue
-<!-- Prefix Lazy để lazy-load -->
-<LazyModal v-if="show" />
-<LazyHeavyChart v-if="showChart" />
+<!-- ❌ Lỗi: HTML không khớp -->
+
+<!-- Server render: <div>Hello</div> -->
+<!-- Client render: <div>Hello, User</div> -->
+
+<!-- ✅ Fix: Đảm bảo initial state nhất quán -->
+<script setup lang="ts">
+// Lấy từ cookie/server
+const userName = useCookie('userName')
+</script>
 ```
 
 ---
 
-## 2. Auto-import Gotchas
+## 2. Component Gotchas
 
-### ❌ Composable không có prefix "use"
+### 2.1 Props không reactive
 
-```typescript
-// ❌ Sai - Không auto-import được
-export const auth = () => { ... }
+```vue
+<!-- ❌ Lỗi: Props không update component -->
 
-// ✅ Đúng
-export const useAuth = () => { ... }
-```
+<!-- SAI: Mutate props trực tiếp -->
+<script setup>
+const props = defineProps<{ count: number }>()
+props.count = 5 // ❌ Không reactive!
+</script>
 
-### ❌ Store không có suffix "Store"
+<!-- ✅ ĐÚNG: Emit thay đổi -->
+<script setup>
+const props = defineProps<{ modelValue: number }>()
+const emit = defineEmits<{ 'update:modelValue': [value: number] }>()
 
-```typescript
-// ❌ Sai - Không auto-import được
-export const useAuth = defineStore('auth', () => { ... })
-
-// ✅ Đúng
-export const useAuthStore = defineStore('auth', () => { ... })
-```
-
-### ❌ Import từ sai path
-
-```typescript
-// ❌ Sai
-import { useAuth } from '~/stores/auth'
-
-// ✅ Đúng - Nuxt auto-imports
-const authStore = useAuthStore()
-```
-
-### ✅ Quan sát auto-imports
-
-```bash
-# Xem file auto-imports trong .nuxt/
-cat .nuxt/auto-imports.d.ts
-```
-
----
-
-## 3. SSR Gotchas
-
-### ❌ Dùng browser APIs trên server
-
-```typescript
-// ❌ Sai - Lỗi trên server
-if (localStorage.getItem('token')) {
-  // ...
+function increment() {
+  emit('update:modelValue', props.modelValue + 1)
 }
+</script>
 ```
 
-### ✅ Kiểm tra environment
+### 2.2 Async components
 
-```typescript
-// ✅ Đúng - Chỉ chạy trên client
-if (import.meta.client) {
-  const token = localStorage.getItem('token')
-}
+```vue
+<!-- ❌ Lỗi: Component không load -->
 
-// ✅ Hoặc dùng useCookie
-const token = useCookie('token')
-```
+<!-- SAI: Dynamic component -->
+<component :is="HeavyComponent" />
 
-### ❌ Random/Date trong reactive state
-
-```typescript
-// ❌ Sai - Khác nhau server/client
-const id = Math.random()
-const now = new Date()
-```
-
-### ✅ SSR-safe values
-
-```typescript
-// ✅ Đúng - Khởi tạo sau mount
-const now = ref('')
-
-onMounted(() => {
-  now.value = new Date().toISOString()
-})
+<!-- ✅ ĐÚNG: Async component -->
+<Suspense>
+  <template #default>
+    <AsyncComponent />
+  </template>
+  <template #fallback>
+    <LoadingSkeleton />
+  </template>
+</Suspense>
 ```
 
 ---
 
-## 4. Pinia Gotchas
+## 3. TypeScript Gotchas
 
-### ❌ Destructure store không dùng storeToRefs
+### 3.1 Ref type inference
 
 ```typescript
-// ❌ Sai - Mất reactivity
-const { user } = useAuthStore()
+// ❌ Lỗi: Type không đúng
+
+const count = ref(0) // count: Ref<number>
+
+// SAI: Ép kiểu sai
+const num: number = count // ❌ Lỗi!
+
+// ✅ ĐÚNG
+const num: number = count.value
 ```
 
-### ✅ Dùng storeToRefs
+### 3.2 DefineProps types
 
 ```typescript
-// ✅ Đúng - Giữ reactivity
-import { storeToRefs } from 'pinia'
-const { user } = storeToRefs(useAuthStore())
-```
+// ❌ Lỗi: DefineProps không có type
 
-### ❌ Gọi store trong setup context
+// SAI
+defineProps({ name: String })
 
-```typescript
-// ❌ Sai - Store chưa available
-const authStore = useAuthStore() // Nếu gọi trước Pinia init
-```
-
-### ✅ Gọi trong setup/composable
-
-```typescript
-// ✅ Đúng
-export const useAuth = () => {
-  const authStore = useAuthStore()
-  return { ... }
-}
+// ✅ ĐÚNG
+defineProps<{ name: string }>()
 ```
 
 ---
 
-## 5. TypeScript Gotchas
+## ▶️ Tham Khảo
 
-### ❌ Import sai kiểu
-
-```typescript
-// ❌ Sai
-import type { User } from './types'
-```
-
-### ✅ Import type đúng cách
-
-```typescript
-// ✅ Đúng
-import type { User } from './types'
-
-// Hoặc inline
-type User = { name: string; age: number }
-```
-
-### ❌ Missing defineProps types
-
-```typescript
-// ❌ Sai - Không có type
-defineProps({
-  name: String
-})
-```
-
-### ✅ Dùng TypeScript
-
-```typescript
-// ✅ Đúng
-const props = defineProps<{
-  name: string
-  age?: number
-}>()
-```
-
----
-
-## 🎯 Checklist
-
-```
-□ Component names là PascalCase?
-□ Composables bắt đầu với "use"?
-□ Stores kết thúc với "Store"?
-□ Không dùng localStorage trực tiếp?
-□ Dùng storeToRefs() khi destructure?
-□ Dùng TypeScript cho props?
-```
+→ [Nuxt Gotchas](https://nuxt.com/docs/getting-started/configuration#nuxtconfig-tips)

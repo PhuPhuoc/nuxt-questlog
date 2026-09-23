@@ -15,7 +15,7 @@
 
 ## 1. Yêu Cầu Trước Khi Cài
 
-### Kiểm tra hệ thống
+### 1.1 Kiểm tra hệ thống
 
 ```bash
 # Kiểm tra Node.js
@@ -27,7 +27,7 @@ npm -v
 # Phải >= 9.0.0
 ```
 
-### Nếu chưa có Node.js
+### 1.2 Nếu chưa có Node.js
 
 1. **Download:** [nodejs.org](https://nodejs.org/)
 2. **Chọn:** LTS (Long Term Support)
@@ -43,7 +43,7 @@ npm -v     # Nên thấy: 9.x.x hoặc cao hơn
 
 ## 2. Cài Đặt Bun (Khuyến Nghị)
 
-### Bun là gì?
+### 2.1 Bun là gì?
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -58,15 +58,12 @@ npm -v     # Nên thấy: 9.x.x hoặc cao hơn
 │  ├── Chạy TypeScript không cần compile                              │
 │  └── Tương thích với npm scripts                                   │
 │                                                                     │
-│  Nhược điểm:                                                       │
-│  └── Còn relatively mới (2024)                                     │
-│                                                                     │
 │  ✅ Khuyến nghị cho Nuxt vì tốc độ dev nhanh                    │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Cài đặt Bun
+### 2.2 Cài đặt Bun
 
 #### Windows (PowerShell)
 
@@ -89,7 +86,7 @@ bun --version
 # Nên thấy: 1.x.x
 ```
 
-### Dùng Bun với Nuxt
+### 2.3 Dùng Bun với Nuxt
 
 ```bash
 # Thay vì npm:
@@ -105,7 +102,7 @@ bun run preview
 
 ## 3. Tạo Nuxt Project
 
-### Cách 1: Dùng nuxi (Khuyến nghị)
+### 3.1 Cách 1: Dùng nuxi (Khuyến nghị)
 
 ```bash
 # Với Bun (Nhanh nhất)
@@ -118,7 +115,7 @@ npx nuxi@latest init my-nuxt-app
 pnpm dlx nuxi@latest init my-nuxt-app
 ```
 
-### Sau khi tạo project
+### 3.2 Sau khi tạo project
 
 ```bash
 # Di chuyển vào thư mục project
@@ -128,7 +125,7 @@ cd my-nuxt-app
 bun install   # hoặc npm install
 ```
 
-### Cách 2: Clone template
+### 3.3 Cách 2: Clone template
 
 ```bash
 # Clone minimal template
@@ -137,7 +134,7 @@ cd my-nuxt-app
 bun install
 ```
 
-### Cách 3: Tạo thủ công
+### 3.4 Cách 3: Tạo thủ công
 
 ```bash
 # Tạo folder
@@ -158,7 +155,7 @@ touch nuxt.config.ts
 
 ## 4. Cấu Trúc Thư Mục Ban Đầu
 
-### Sau khi tạo, bạn sẽ thấy:
+### 4.1 Sau khi tạo, bạn sẽ thấy:
 
 ```
 📁 my-nuxt-app/
@@ -175,7 +172,7 @@ touch nuxt.config.ts
 └── 📄 node_modules/       ← Dependencies
 ```
 
-### Giải thích từng file quan trọng
+### 4.2 Giải thích từng file quan trọng
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -204,7 +201,7 @@ touch nuxt.config.ts
 
 ## 5. Chạy Development Server
 
-### Lệnh để chạy
+### 5.1 Lệnh để chạy
 
 ```bash
 # Với Bun (Nhanh)
@@ -214,7 +211,7 @@ bun run dev
 npm run dev
 ```
 
-### Output khi thành công
+### 5.2 Output khi thành công
 
 ```
 ➜  Nuxt 4.5.2
@@ -228,12 +225,12 @@ npm run dev
   ➜  press h + enter to show health tips
 ```
 
-### Truy cập ứng dụng
+### 5.3 Truy cập ứng dụng
 
 1. **Mở trình duyệt:** [http://localhost:3000](http://localhost:3000)
 2. **Bạn sẽ thấy:** Trang chào mừng Nuxt
 
-### Nuxt DevTools
+### 5.4 Nuxt DevTools
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -258,7 +255,7 @@ npm run dev
 
 ## 6. Troubleshooting
 
-### Lỗi thường gặp
+### 6.1 Lỗi thường gặp
 
 #### Lỗi: "command not found: nuxt"
 
@@ -303,7 +300,7 @@ node -v
 # Linux: nvm install 20
 ```
 
-### Nếu vẫn không được
+### 6.2 Nếu vẫn không được
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -347,4 +344,3 @@ node -v
 ## ▶️ Tiếp Theo
 
 → [02-first-app.md](02-first-app.md) - Tạo Ứng Dụng Đầu Tiên
-

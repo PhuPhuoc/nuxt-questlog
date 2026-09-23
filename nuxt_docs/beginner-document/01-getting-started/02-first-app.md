@@ -180,13 +180,6 @@ Tạo file `app/app.vue`:
 │  │ [Đọc thêm →]                                               │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 │                                                                     │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │ 🎨 Hướng dẫn Vue 3 Composition API                        │   │
-│  │ Composition API là cách viết code Vue 3...                  │   │
-│  │ 📅 10/01/2024 | 👁 250 lượt xem                          │   │
-│  │ [Đọc thêm →]                                               │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                                                                     │
 │  [Xem tất cả bài viết →]                                           │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
@@ -213,7 +206,7 @@ const posts = ref([
     id: 2,
     slug: 'vue3-composition-api',
     title: 'Hướng dẫn Vue 3 Composition API',
-    excerpt: 'Composition API là cách viết code Vue 3 được khuyến nghị. Học cách dùng ref, computed, watch.',
+    excerpt: 'Composition API là cách viết code Vue 3 được khuyến nghị.',
     date: '10/01/2024',
     views: 250
   },
@@ -221,7 +214,7 @@ const posts = ref([
     id: 3,
     slug: 'typescript-with-nuxt',
     title: 'TypeScript với Nuxt cho người mới',
-    excerpt: 'Hướng dẫn setup TypeScript trong Nuxt và những lợi ích khi dùng TypeScript.',
+    excerpt: 'Hướng dẫn setup TypeScript trong Nuxt và những lợi ích.',
     date: '05/01/2024',
     views: 180
   }
@@ -272,14 +265,12 @@ const posts = ref([
 </template>
 
 <style scoped>
-/* Layout */
 .home-page {
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
 }
 
-/* Hero */
 .hero {
   text-align: center;
   padding: 3rem 0;
@@ -297,7 +288,6 @@ const posts = ref([
   color: #666;
 }
 
-/* Posts */
 .latest-posts h2 {
   margin-bottom: 1.5rem;
   font-size: 1.5rem;
@@ -348,7 +338,6 @@ const posts = ref([
   text-decoration: underline;
 }
 
-/* CTA */
 .cta {
   text-align: center;
   margin-top: 3rem;
@@ -547,7 +536,6 @@ const navLinks = [
 
     <!-- Main Content -->
     <main class="app-main">
-      <!-- slot sẽ được thay bằng page content -->
       <slot />
     </main>
 
@@ -565,7 +553,6 @@ const navLinks = [
   flex-direction: column;
 }
 
-/* Header */
 .app-header {
   background: white;
   border-bottom: 1px solid #eee;
@@ -613,12 +600,10 @@ const navLinks = [
   font-weight: 500;
 }
 
-/* Main */
 .app-main {
   flex: 1;
 }
 
-/* Footer */
 .app-footer {
   background: #f5f5f5;
   padding: 2rem;
@@ -693,7 +678,7 @@ const allPosts = ref([
     id: 2,
     slug: 'vue3-composition-api',
     title: 'Hướng dẫn Vue 3 Composition API',
-    excerpt: 'Composition API là cách viết code Vue 3 được khuyến nghị. Học cách dùng ref, computed, watch.',
+    excerpt: 'Composition API là cách viết code Vue 3 được khuyến nghị.',
     category: 'Vue',
     date: '10/01/2024',
     views: 250
@@ -706,15 +691,6 @@ const allPosts = ref([
     category: 'TypeScript',
     date: '05/01/2024',
     views: 180
-  },
-  {
-    id: 4,
-    slug: 'pinia-state-management',
-    title: 'Pinia - Quản lý State trong Nuxt',
-    excerpt: 'Tìm hiểu cách dùng Pinia để quản lý state trong ứng dụng Nuxt.',
-    category: 'Nuxt',
-    date: '01/01/2024',
-    views: 320
   }
 ])
 
@@ -739,31 +715,21 @@ useSeoMeta({
         :key="post.id"
         class="post-card"
       >
-        <!-- Category badge -->
         <span class="category-badge">{{ post.category }}</span>
-
-        <!-- Title -->
         <NuxtLink :to="`/blog/${post.slug}`">
           <h2>{{ post.title }}</h2>
         </NuxtLink>
-
-        <!-- Excerpt -->
         <p>{{ post.excerpt }}</p>
-
-        <!-- Meta -->
         <div class="post-meta">
           <span>📅 {{ post.date }}</span>
           <span>👁 {{ post.views }} lượt xem</span>
         </div>
-
-        <!-- Read more -->
         <NuxtLink :to="`/blog/${post.slug}`" class="read-more">
           Đọc bài viết →
         </NuxtLink>
       </article>
     </div>
 
-    <!-- Link về trang chủ -->
     <div class="back-link">
       <NuxtLink to="/">← Quay về trang chủ</NuxtLink>
     </div>
@@ -792,7 +758,6 @@ useSeoMeta({
   color: #666;
 }
 
-/* Grid */
 .posts-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -895,18 +860,12 @@ const posts = {
     title: 'Tại sao nên dùng Nuxt?',
     content: `
       <p>Nuxt là một framework mạnh mẽ xây dựng trên nền tảng Vue.js, cung cấp nhiều tính năng ưu việt:</p>
-      
       <h3>1. Server-Side Rendering (SSR)</h3>
-      <p>Nuxt hỗ trợ SSR sẵn có, giúp cải thiện SEO và tốc độ tải trang. Thay vì chờ JavaScript load xong mới hiển thị nội dung, server sẽ render HTML trước.</p>
-      
+      <p>Nuxt hỗ trợ SSR sẵn có, giúp cải thiện SEO và tốc độ tải trang.</p>
       <h3>2. Auto-Imports</h3>
-      <p>Không cần import Vue APIs như ref(), computed() mỗi lần sử dụng. Nuxt tự động nhận diện và import cho bạn.</p>
-      
+      <p>Không cần import Vue APIs như ref(), computed() mỗi lần sử dụng.</p>
       <h3>3. File-Based Routing</h3>
-      <p>Tạo route bằng cách tạo file. pages/index.vue = route /, pages/about.vue = route /about. Không cần cấu hình router!</p>
-      
-      <h3>4. Hybrid Rendering</h3>
-      <p>Nuxt hỗ trợ nhiều rendering modes: SSR, SSG, SPA, ISR. Chọn mode phù hợp cho từng route.</p>
+      <p>Tạo route bằng cách tạo file. Không cần cấu hình router!</p>
     `,
     category: 'Nuxt',
     date: '15/01/2024',
@@ -916,16 +875,11 @@ const posts = {
   'vue3-composition-api': {
     title: 'Hướng dẫn Vue 3 Composition API',
     content: `
-      <p>Composition API là cách viết code Vue 3 được khuyến nghị, thay thế Options API của Vue 2.</p>
-      
+      <p>Composition API là cách viết code Vue 3 được khuyến nghị.</p>
       <h3>ref() và reactive()</h3>
-      <p>Tạo reactive state với ref() cho primitive values và reactive() cho objects.</p>
-      
+      <p>Tạo reactive state với ref() cho primitive values.</p>
       <h3>computed()</h3>
       <p>Tạo computed properties - tự động cập nhật khi dependencies thay đổi.</p>
-      
-      <h3>watch() và watchEffect()</h3>
-      <p>Theo dõi sự thay đổi của reactive values và chạy side effects.</p>
     `,
     category: 'Vue',
     date: '10/01/2024',
@@ -936,13 +890,11 @@ const posts = {
     title: 'TypeScript với Nuxt cho người mới',
     content: `
       <p>TypeScript mang lại nhiều lợi ích cho việc phát triển ứng dụng Vue/Nuxt.</p>
-      
       <h3>Lợi ích của TypeScript</h3>
       <ul>
         <li>Type safety - phát hiện lỗi sớm</li>
         <li>Autocomplete tốt hơn</li>
         <li>Refactoring dễ dàng hơn</li>
-        <li>Documentation tự tạo</li>
       </ul>
     `,
     category: 'TypeScript',
@@ -986,10 +938,8 @@ useSeoMeta({
         </div>
       </header>
 
-      <!-- Content -->
       <div class="post-content" v-html="post.content"></div>
 
-      <!-- Back to blog -->
       <div class="back-link">
         <NuxtLink to="/blog">← Quay lại Blog</NuxtLink>
       </div>
@@ -1011,7 +961,6 @@ useSeoMeta({
   padding: 2rem;
 }
 
-/* Breadcrumb */
 .breadcrumb {
   display: flex;
   gap: 0.5rem;
@@ -1030,7 +979,6 @@ useSeoMeta({
   text-decoration: underline;
 }
 
-/* Header */
 .post-header {
   margin-bottom: 2rem;
   padding-bottom: 1rem;
@@ -1061,7 +1009,6 @@ useSeoMeta({
   font-size: 0.875rem;
 }
 
-/* Content */
 .post-content {
   line-height: 1.8;
   color: #444;
@@ -1081,11 +1028,6 @@ useSeoMeta({
   padding-left: 1.5rem;
 }
 
-.post-content :deep(li) {
-  margin-bottom: 0.5rem;
-}
-
-/* Back link */
 .back-link {
   margin-top: 3rem;
   padding-top: 2rem;
@@ -1101,7 +1043,6 @@ useSeoMeta({
   color: #42b883;
 }
 
-/* Not found */
 .not-found {
   text-align: center;
   padding: 4rem 0;

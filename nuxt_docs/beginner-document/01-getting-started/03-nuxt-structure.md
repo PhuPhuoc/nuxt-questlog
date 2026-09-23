@@ -191,7 +191,7 @@ components/
 │
 └── 📁 base/             # Prefix = Base
     ├── 📄 Input.vue     → <BaseInput>
-    └── 📁 Button.vue    → <BaseButton>
+    └── 📁 Button.vue     → <BaseButton>
 ```
 
 **Quy tắc đặt tên:**
@@ -208,7 +208,7 @@ composables/ STRUCTURE:
 composables/
 ├── 📄 useAuth.ts        → useAuth()
 ├── 📄 useTheme.ts       → useTheme()
-└── 📄 useFetchData.ts   → useFetchData()
+└── 📄 useFetchData.ts  → useFetchData()
 ```
 
 **Quy tắc:**
@@ -262,7 +262,7 @@ middleware/ STRUCTURE:
 
 middleware/
 ├── 📄 auth.ts           # Named middleware
-├── 📄 auth.global.ts  # Global middleware (chạy mọi route)
+├── 📄 auth.global.ts    # Global middleware (chạy mọi route)
 └── 📄 admin.ts         # Admin-only middleware
 ```
 
@@ -277,7 +277,7 @@ plugins/ STRUCTURE:
 ────────────────────
 
 plugins/
-├── 📄 analytics.ts       # Client + Server
+├── 📄 analytics.ts         # Client + Server
 ├── 📄 analytics.client.ts  # Chỉ Client
 └── 📄 analytics.server.ts  # Chỉ Server
 ```
@@ -295,7 +295,7 @@ utils/ STRUCTURE:
 utils/
 ├── 📄 formatDate.ts     → formatDate()
 ├── 📄 validateEmail.ts  → validateEmail()
-└── 📄 constants.ts      → exported constants
+└── 📄 constants.ts     → exported constants
 ```
 
 **Quy tắc:**

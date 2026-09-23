@@ -1,612 +1,316 @@
-# Lỗi Thường Gặp và Cách Fix
+# Lỗi Thường Gặp - Debugging Guide
 
-> **Mục tiêu:** Khi bạn gặp lỗi, đây là nơi đầu tiên để tìm giải pháp.
+> **Mục tiêu:** Biết cách debug và fix những lỗi phổ biến trong Nuxt.
 
 ## Mục lục
 
-1. [Lỗi "Component not found"](#1-lỗi-component-not-found)
-2. [Lỗi "is called outside of setup"](#2-lỗi-is-called-outside-of-setup)
-3. [Lỗi Hydration](#3-lỗi-hydration)
-4. [Lỗi TypeScript](#4-lỗi-typescript)
-5. [Lỗi Routing](#5-lỗi-routing)
-6. [Lỗi Pinia](#6-lỗi-pinia)
-7. [Lỗi Build](#7-lỗi-build)
+1. [Lỗi cài đặt](#1-lỗi-cài-đặt)
+2. [Lỗi build](#2-lỗi-build)
+3. [Lỗi runtime](#3-lỗi-runtime)
+4. [Lỗi SSR](#4-lỗi-ssr)
+5. [Lỗi TypeScript](#5-lỗi-typescript)
 
 ---
 
-## 1. Lỗi "Component not found"
+## 1. Lỗi Cài Đặt
 
-### Triệu chứng
-
-```
-[Vue warn]: Failed to resolve component: MyComponent
-```
-
-### Nguyên nhân và cách fix
-
-#### Nguyên nhân 1: Tên file không đúng
-
-```
-❌ Sai:  myComponent.vue  → <Mycomponent>
-✅ Đúng: MyComponent.vue  → <MyComponent>
-```
-
-**Fix:**
-```bash
-# Đổi tên file thành PascalCase
-# my-component.vue → MyComponent.vue
-```
-
-#### Nguyên nhân 2: File không trong thư mục components
-
-```
-❌ Sai: components/MyComponent.vue (nhưng đang ở root)
-✅ Đúng: app/components/MyComponent.vue
-```
-
-**Fix:**
-```bash
-# Di chuyển vào đúng thư mục
-mv components/ app/components/
-```
-
-#### Nguyên nhân 3: Component trong thư mục con
-
-```
-components/
-└── ui/
-    └── Modal.vue  → <UiModal>  ❌ SAI!
-
-# Phải là: components/ui/Modal.vue → <UiModal>
-```
-
-**Fix:**
-```bash
-# Kiểm tra cấu trúc
-components/
-└── ui/
-    └── Modal.vue  ✅ Đúng!
-```
-
-#### Nguyên nhân 4: Nuxt chưa nhận diện component mới
+### 1.1 "command not found: nuxi"
 
 ```bash
-# Restart dev server
-# Nhấn Ctrl+C để stop
-# Sau đó chạy lại
-bun run dev
+# ❌ Sai
+nuxi init my-app
+
+# ✅ Đúng
+npx nuxi@latest init my-app
+
+# ✅ Hoặc dùng Bun
+bunx nuxi@latest init my-app
 ```
 
-### Checklist cho lỗi này
+### 1.2 Node.js version quá cũ
 
+```bash
+# Kiểm tra version
+node -v
+
+# Lỗi: "Requires Node >= 18.0.0"
+
+# Fix: Update Node.js
+# Windows: Tải từ nodejs.org
+# Mac: brew install node@20
+# Linux: nvm install 20
 ```
-□ Tên file là PascalCase? (MyComponent.vue)
-□ File trong app/components/?
-□ Tên component đúng? (<MyComponent> không phải <Mycomponent>)
-□ Đã restart dev server?
+
+### 1.3 Permission denied
+
+```bash
+# Lỗi: EACCES permission denied
+
+# Fix: Xóa node_modules và cài lại
+rm -rf node_modules package-lock.json
+npm install
+
+# Hoặc fix permission
+sudo chown -R $(whoami) ~/.npm
+```
+
+### 1.4 Cache corruption
+
+```bash
+# Xóa cache và cài lại
+rm -rf node_modules .nuxt .output package-lock.json
+npm install
 ```
 
 ---
 
-## 2. Lỗi "is called outside of setup"
+## 2. Lỗi Build
 
-### Triệu chứng
+### 2.1 "Cannot find module 'nuxt'"
 
-```
-Error: useRoute() is called outside of setup()
-Error: useRouter() is called outside of setup()
-Error: useAuthStore() is called outside of setup()
-```
+```bash
+# Kiểm tra node_modules có nuxt không
+ls node_modules | grep nuxt
 
-### Nguyên nhân
+# Nếu không có:
+npm install
 
-Composables (như `useRoute()`, `useRouter()`, Pinia stores) phải được gọi **bên trong setup()** hoặc **lifecycle hooks**.
-
-```vue
-<script setup>
-// ✅ ĐÚNG - Gọi trong setup
-const route = useRoute()
-</script>
+# Hoặc xóa và cài lại
+rm -rf node_modules package-lock.json
+npm install
 ```
 
-```vue
-<script>
-// ❌ SAI - Gọi ngoài setup
-const route = useRoute()  // LỖI!
-
-export default {
-  mounted() {
-    const route = useRoute()  // Cũng LỖI!
-  }
-}
-</script>
-```
-
-### Cách fix
-
-#### Fix 1: Gọi trong setup (cho Vue 3 Composition API)
-
-```vue
-<script setup>
-import { onMounted } from 'vue'
-
-// ✅ Gọi trong setup
-const route = useRoute()
-const router = useRouter()
-const authStore = useAuthStore()
-
-// ✅ Hoặc trong lifecycle hooks
-onMounted(() => {
-  console.log(route.params.id)
-})
-</script>
-```
-
-#### Fix 2: Dùng watch thay vì lifecycle
-
-```vue
-<script setup>
-// ✅ ĐÚNG - watchEffect chạy trong setup context
-import { watchEffect } from 'vue'
-
-const route = useRoute()
-
-// Chạy khi route thay đổi
-watchEffect(() => {
-  console.log(route.params.id)
-})
-</script>
-```
-
-#### Fix 3: Dùng defineNuxtRouteTransformer (cho middleware)
+### 2.2 "Failed to resolve import"
 
 ```typescript
-// middleware/auth.ts
-export default defineNuxtRouteMiddleware((to, from) => {
-  // ✅ ĐƯỢC PHÉP - Middleware có setup context riêng
-  const authStore = useAuthStore()
+// Lỗi: Cannot find module '@/components/Button'
 
-  if (!authStore.isLoggedIn) {
-    return navigateTo('/login')
+// Kiểm tra tsconfig.json có đúng paths không
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./app/*"]
+    }
   }
-})
-```
-
-### Nguyên nhân phổ biến khác
-
-#### Composable được gọi trong callback
-
-```vue
-<script setup>
-// ❌ SAI
-setTimeout(() => {
-  const route = useRoute()  // LỖI!
-}, 1000)
-
-// ❌ SAI
-button.onclick = () => {
-  const route = useRoute()  // LỖI!
 }
-</script>
 ```
 
-```vue
-<script setup>
-// ✅ ĐÚNG
-const route = useRoute()  // Gọi ở đây
+### 2.3 Build fails với TypeScript
 
-setTimeout(() => {
-  console.log(route.params.id)  // Dùng ở đây
-}, 1000)
+```bash
+# Kiểm tra TypeScript version
+npx tsc --version
+
+# Chạy type-check trước
+npm run typecheck
+
+# Hoặc bỏ qua typecheck khi build
+npm run build -- --no-typescript
+```
+
+### 2.4 "Hydration mismatch"
+
+```vue
+<!-- ❌ Lỗi: Hydration mismatch -->
+
+<!-- Server: count = 0 -->
+<!-- Client: count = 1 -->
+
+<!-- Fix: Dùng Client-only rendering -->
+<ClientOnly>
+  <Counter :initial-count="1" />
+</ClientOnly>
+
+<!-- Hoặc dùng onMounted để set giá trị -->
+<script setup>
+const count = ref(0)
+
+onMounted(() => {
+  count.value = 1 // Chỉ chạy trên client
+})
 </script>
 ```
 
 ---
 
-## 3. Lỗi Hydration
+## 3. Lỗi Runtime
 
-### Triệu chứng
+### 3.1 "window is not defined"
 
-```
-[Vue warn]: Hydration text content mismatch...
-[Vue warn]: Hydration class mismatch...
-[Vue warn]: Hydration completed but there were warnings.
-```
+```typescript
+// ❌ Lỗi: SSR tries to access window
 
-### Nguyên nhân
+// Fix 1: Check import.meta.client
+if (import.meta.client) {
+  // Code chỉ chạy trên client
+  window.localStorage.getItem('key')
+}
 
-Hydration xảy ra khi **server render HTML** và **client re-render**. Lỗi này = Server và Client tạo ra HTML khác nhau.
-
-### Các nguyên nhân phổ biến
-
-#### Nguyên nhân 1: Dùng Date/Time
-
-```vue
-<script setup>
-// ❌ SAI - Mỗi lần chạy tạo thời gian khác nhau
-const now = new Date().toISOString()
-
-// ❌ SAI - Math.random() tạo số khác nhau mỗi lần
-const randomId = Math.random()
-</script>
-```
-
-```vue
-<script setup>
-// ✅ ĐÚNG - Chạy trên client only
-const now = ref('')
-
+// Fix 2: Dùng onMounted
 onMounted(() => {
-  now.value = new Date().toISOString()  // Chạy sau hydration
+  // Code chạy sau khi mount (chỉ client)
 })
+
+// Fix 3: Client-only plugin
+// plugins/example.client.ts - chỉ chạy trên client
+```
+
+### 3.2 "localStorage is not defined"
+
+```typescript
+// ❌ Lỗi
+const token = localStorage.getItem('token')
+
+// ✅ Fix: Dùng useCookie thay vì localStorage
+const token = useCookie('token')
+
+// Hoặc check client
+if (import.meta.client) {
+  const token = localStorage.getItem('token')
+}
+```
+
+### 3.3 "useXXX cannot be called outside setup"
+
+```typescript
+// ❌ Lỗi: useRoute() được gọi outside setup
+
+// SAI: Trong async function
+async function fetchData() {
+  const route = useRoute() // ❌ Lỗi!
+}
+
+// ✅ ĐÚNG: Gọi trong setup (synchronous)
+const route = useRoute()
+
+// Hoặc dùng await trong setup
+const route = useRoute()
+await fetchData()
+```
+
+### 3.4 "Cannot destructure property 'xxx'"
+
+```vue
+<!-- ❌ Lỗi: useRoute() return undefined -->
+
+<!-- SAI -->
+<script setup>
+const { params } = useRoute() // ❌
+
+// ✅ ĐÚNG -->
+<script setup lang="ts">
+const route = useRoute()
+const { slug } = route.params
 </script>
 ```
 
-#### Nguyên nhân 2: localStorage
+---
+
+## 4. Lỗi SSR
+
+### 4.1 "Hydration text content mismatch"
 
 ```vue
-<script setup>
-// ❌ SAI - localStorage không có trên server
-const token = localStorage.getItem('token')
+<!-- ❌ Lỗi: Nội dung khác nhau server/client -->
+
+<!-- Server render: "Hello" -->
+<!-- Client render: "Hello, Nam" -->
+
+<!-- Fix: Đảm bảo data giống nhau -->
+<script setup lang="ts">
+// Lấy user từ cookie/server, không phải localStorage
+const user = useCookie('user')
+</script>
 ```
 
-```vue
-<script setup>
-// ✅ ĐÚNG - Dùng useCookie() thay vì localStorage
-const token = useCookie('token')
+### 4.2 "Error during SSR"
+
+```typescript
+// Kiểm tra server logs
+npm run dev
+
+// Xem console errors trong terminal
+
+// Wrap trong try/catch
+try {
+  const data = await $fetch('/api/...')
+} catch (error) {
+  console.error('Fetch error:', error)
+}
 ```
 
-```vue
-<script setup>
-// ✅ HOẶC - Chỉ chạy trên client
-const token = ref(null)
+### 4.3 Cookies not set on server
 
+```typescript
+// ❌ Lỗi: Cookie không persist qua SSR
+
+// SAI
+const token = ref('')
 onMounted(() => {
   token.value = localStorage.getItem('token')
 })
-</script>
-```
 
-#### Nguyên nhân 3: Dùng window/document
-
-```vue
-<script setup>
-// ❌ SAI - window không có trên server
-const width = window.innerWidth
-```
-
-```vue
-<script setup>
-// ✅ ĐÚNG - Kiểm tra environment
-const isClient = import.meta.client
-
-onMounted(() => {
-  if (import.meta.client) {
-    console.log(window.innerWidth)
-  }
+// ✅ ĐÚNG: Dùng useCookie
+const token = useCookie('token', {
+  maxAge: 60 * 60 * 24 // 1 day
 })
-</script>
-```
-
-#### Nguyên nhân 4: Browser-only APIs
-
-```vue
-<script setup>
-// ❌ SAI
-const isOnline = navigator.onLine
-```
-
-```vue
-<script setup>
-// ✅ ĐÚNG
-const isOnline = ref(true)
-
-onMounted(() => {
-  isOnline.value = navigator.onLine
-})
-
-// Lắng nghe sự kiện
-window.addEventListener('online', () => isOnline.value = true)
-window.addEventListener('offline', () => isOnline.value = false)
-</script>
-```
-
-### Checklist Hydration
-
-```
-□ Có dùng Date.now() hoặc new Date()?
-□ Có dùng Math.random()?
-□ Có dùng localStorage trực tiếp?
-□ Có dùng window/document?
-□ Có dùng navigator.onLine?
-□ Giá trị có thể khác nhau giữa server và client?
 ```
 
 ---
 
-## 4. Lỗi TypeScript
+## 5. Lỗi TypeScript
 
-### Lỗi: Cannot find type definition
+### 5.1 "Cannot find type definition"
 
-```
-TS6307: File '...' is listed in the tsconfig, but does not exist.
-```
-
-**Fix:**
 ```bash
-# Chạy nuxt prepare
-bun run dev
-# Hoặc
+# Cài type definitions
+npm install -D @types/node
+npm install -D vue-tsc
+
+# Hoặc chạy
 npx nuxi prepare
 ```
 
-### Lỗi: Property does not exist on type
+### 5.2 "Type 'xxx' is not assignable to type 'yyy'"
 
-```vue
-<script setup lang="ts">
-// ❌ LỖI
-defineProps({
-  name: String
-})
-
-console.log(props.names)  // "names" không tồn tại
-</script>
-```
-
-**Fix:**
 ```typescript
+// Kiểm tra kiểu
+const count: number = ref(0) // ❌ ref returns Ref<number>
+
 // ✅ ĐÚNG
-const props = defineProps<{
-  name: string
-}>()
-
-console.log(props.name)  // Đúng
+const count = ref<number>(0)
+const countValue: number = count.value
 ```
 
-### Lỗi: Argument of type 'X' is not assignable
+### 5.3 "Missing return type on function"
 
 ```typescript
-// ❌ LỖI
-const count: Ref<number> = ref('hello')  // string không assign được cho number
-```
+// Thêm type cho function
+const add = (a: number, b: number): number => {
+  return a + b
+}
 
-**Fix:**
-```typescript
-// ✅ ĐÚNG
-const count: Ref<number> = ref(0)
-const name: Ref<string> = ref('hello')
+// Hoặc dùng type inference
+const add = (a: number, b: number) => a + b
 ```
 
 ---
 
-## 5. Lỗi Routing
-
-### Lỗi: Page not found (404)
-
-```
-Cannot find any route matching path: /unknown
-```
-
-**Nguyên nhân:**
-- Route chưa được tạo
-- File name không đúng format
-
-**Fix:**
-```
-Kiểm tra file trong pages/:
-□ pages/about.vue → /about ✅
-□ pages/blog/[slug].vue → /blog/:slug ✅
-□ pages/[...catchall].vue → /* ✅
-```
-
-### Lỗi: Route params là undefined
-
-```vue
-<script setup>
-// ❌ LỖI
-const { id } = route.params
-```
-
-**Fix:**
-```vue
-<script setup>
-// ✅ ĐÚNG
-const route = useRoute()
-const id = route.params.id  // Lấy từ params object
-console.log(id)
-</script>
-```
-
-### Lỗi: Middleware không chạy
-
-```vue
-<script setup>
-// ❌ Đặt middleware ở đây - không đúng chỗ
-</script>
-
-<script>
-// Middleware ở đây - SAI!
-</script>
-```
-
-**Fix:**
-```vue
-<script setup>
-// ✅ ĐÚNG - definePageMeta phải trong <script setup>
-definePageMeta({
-  middleware: 'auth'
-})
-</script>
-```
-
----
-
-## 6. Lỗi Pinia
-
-### Lỗi: Store not found
-
-```
-getActivePinia() was called with no active Pinia
-```
-
-**Nguyên nhân:** Pinia chưa được khởi tạo.
-
-**Fix:**
-
-Trong Nuxt 4, Pinia đã được setup tự động. Kiểm tra:
-
-```typescript
-// nuxt.config.ts
-export default defineNuxtConfig({
-  compatibilityDate: '2025-07-15'
-  // Pinia đã được auto-setup trong Nuxt 4
-})
-```
-
-### Lỗi: Store không reactive khi destructure
-
-```vue
-<script setup>
-import { useAuthStore } from '~/stores/auth'
-
-const authStore = useAuthStore()
-
-// ❌ SAI - user không reactive
-const { user } = authStore
-
-// ✅ ĐÚNG - Dùng storeToRefs
-import { storeToRefs } from 'pinia'
-const { user } = storeToRefs(authStore)
-```
-
-### Lỗi: State không được serialize (SSR)
-
-```typescript
-// ❌ SAI - State chứa function không serialize được
-const state = ref(() => console.log('hi'))
-```
-
-**Fix:**
-```typescript
-// ✅ ĐÚNG - Chỉ serialize data, không phải functions
-const user = ref({
-  name: 'Nam',
-  email: 'nam@example.com'
-})
-```
-
----
-
-## 7. Lỗi Build
-
-### Lỗi: Out of memory
-
-```
-FATAL ERROR: CALL_AND_RETRY_LAST Allocation failed - JavaScript heap out of memory
-```
-
-**Fix:**
-```bash
-# Tăng memory limit
-NODE_OPTIONS="--max-old-space-size=4096" bun run build
-```
-
-### Lỗi: Cannot find module
-
-```
-Cannot find module 'nuxt' or its corresponding type declarations
-```
-
-**Fix:**
-```bash
-# Xóa node_modules và cài lại
-rm -rf node_modules package-lock.json
-bun install
-```
-
-### Lỗi: Module not found
-
-```
-Cannot find module '@nuxtjs/something'
-```
-
-**Fix:**
-```bash
-# Cài module
-bun add @nuxtjs/something
-
-# Hoặc cài lại tất cả
-bun install
-```
-
----
-
-## 🔍 Kỹ Thuật Debug
-
-### 1. Console.log trong Nuxt
-
-```vue
-<script setup>
-// Xem giá trị trong terminal (server) và browser console (client)
-console.log('Debug:', someValue)
-
-// Xem trên cả server và client
-console.log('Process:', import.meta.client, import.meta.server)
-</script>
-```
-
-### 2. Debug với Vue DevTools
-
-```
-1. Cài Vue DevTools extension cho trình duyệt
-2. Mở DevTools → Vue tab
-3. Inspect components, props, state
-4. Xem Pinia stores
-```
-
-### 3. Debug với Nuxt DevTools
-
-```
-1. Bật devtools trong nuxt.config.ts
-2. Nhấn Shift + D trong trình duyệt
-3. Xem routes, components, state
-```
-
-### 4. Inspect Network Requests
-
-```
-1. Mở DevTools → Network tab
-2. Xem các API calls
-3. Kiểm tra response data
-```
-
----
-
-## 🎯 Quick Fix Checklist
+## 🎯 Checklist Debug
 
 ```
 KHI GẶP LỖI:
-─────────────
-□ Đọc lỗi trong terminal - thường có hint
-□ Restart dev server (Ctrl+C → bun run dev)
-□ Xóa cache (.nuxt folder)
-□ Kiểm tra tên file (PascalCase?)
-□ Kiểm tra import paths
-□ Kiểm tra syntax (thừa/dư符, thiếu })
-□ Tìm lỗi trong file nào
+───────────
+1. Đọc error message kỹ
+2. Xem line number trong terminal
+3. Copy error → Google/Stack Overflow
+4. Kiểm tra Nuxt version compatibility
+5. Xem docs: nuxt.com/docs
+6. Hỏi Discord community
 
-KHI KHÔNG TÌM ĐƯỢC:
-───────────────────
-1. Copy lỗi message
-2. Paste vào Google: "nuxt [lỗi message]"
-3. Tìm trong Nuxt Discord
-4. Tạo minimal reproduction
+LÀM SẠCH TRƯỚC KHI DEBUG:
+──────────────────────────
+1. rm -rf node_modules .nuxt .output
+2. npm install
+3. npm run dev
 ```
-
----
-
-## ▶️ Tiếp Theo
-
-→ [02-devtools-guide.md](02-devtools-guide.md) - Hướng dẫn sử dụng DevTools
-
-hoặc → [02-core-concepts/01-auto-imports.md](../02-core-concepts/01-auto-imports.md) - Quay lại học Core Concepts

@@ -1,571 +1,381 @@
-# 2. Cấu trúc & Cách tạo Store trong Nuxt 3 (Pinia Auto-Imports)
+# Pinia Store - Cấu Trúc Chi Tiết
 
-## 2.1. Cấu hình @pinia/nuxt trong nuxt.config.ts
+> **Mục tiêu:** Học cách tạo và tổ chức Pinia stores trong Nuxt.
 
-### Cài đặt Module
+## Mục lục
 
-```bash
-# Nuxt tự động cài @pinia/nuxt khi thêm vào modules
-# Hoặc cài thủ công:
-npx nuxi@latest module add pinia
-```
-
-### Cấu hình nuxt.config.ts
-
-```typescript
-// nuxt.config.ts
-export default defineNuxtConfig({
-  modules: ['@pinia/nuxt'],
-
-  // Cấu hình Pinia (tùy chọn)
-  pinia: {
-    // Thư mục chứa stores - auto-imported
-    storesDirs: ['./stores/**'],
-
-    // Disable auto-imports nếu muốn import thủ công
-    autoImport: {
-      autoImport: false,
-      injectAutoState: false
-    }
-  }
-})
-```
-
-### Cấu trúc thư mục khuyến nghị
-
-```
-├── app/
-│   ├── stores/                    # 📁 Pinia Stores (auto-imported)
-│   │   ├── auth.ts               # Auth store
-│   │   ├── cart.ts               # Cart store
-│   │   └── product.ts             # Product store
-│   ├── composables/              # Composables (nếu dùng useState)
-│   │   └── useNotifications.ts
-│   ├── components/
-│   └── pages/
-├── server/
-│   └── api/
-├── nuxt.config.ts
-└── package.json
-```
+1. [Setup Store Pattern](#1-setup-store-pattern)
+2. [Option Store Pattern](#2-option-store-pattern)
+3. [Getters](#3-getters)
+4. [Actions](#4-actions)
+5. [Store với Plugins](#5-store-với-plugins)
 
 ---
 
-## 2.2. Hai Style viết Store
+## 1. Setup Store Pattern (Khuyến nghị)
 
-### Option Store Style
-
-```typescript
-// stores/counter.options.ts
-import { defineStore } from 'pinia'
-
-export const useCounterStore = defineStore('counter', {
-  // ===== STATE =====
-  state: () => ({
-    count: 0,
-    userName: 'Guest',
-    lastUpdated: null as Date | null,
-    history: [] as number[]
-  }),
-
-  // ===== GETTERS (computed properties) =====
-  getters: {
-    // getter đơn giản - trả về state
-    doubleCount: (state) => state.count * 2,
-
-    // getter có thể truy cập other getters bằng `this`
-    doubleCountPlusOne(): number {
-      return this.doubleCount + 1
-    },
-
-    // getter với tham số (factory pattern)
-    getHistoryItem: (state) => {
-      return (index: number) => state.history[index] ?? null
-    },
-
-    // getter kiểm tra điều kiện
-    isPositive: (state) => state.count > 0,
-    isEmpty: (state) => state.count === 0
-  },
-
-  // ===== ACTIONS =====
-  actions: {
-    // Action đồng bộ
-    increment() {
-      this.count++
-      this.lastUpdated = new Date()
-      this.history.push(this.count)
-    },
-
-    decrement() {
-      this.count--
-      this.lastUpdated = new Date()
-    },
-
-    // Action bất đồng bộ
-    async fetchInitialCount() {
-      try {
-        const response = await $fetch<{ count: number }>('/api/counter')
-        this.count = response.count
-        this.lastUpdated = new Date()
-      } catch (error) {
-        console.error('Failed to fetch count:', error)
-        throw error
-      }
-    },
-
-    // Action với parameter
-    setCount(newCount: number) {
-      if (newCount < 0) {
-        throw new Error('Count cannot be negative')
-      }
-      this.count = newCount
-      this.history.push(newCount)
-    },
-
-    // Action reset
-    reset() {
-      this.$reset() // ⚠️ Chỉ có trong Option Store
-    }
-  }
-})
-```
-
-### Setup Store Style (Composition API)
+### 1.1 Cú pháp
 
 ```typescript
-// stores/counter.setup.ts
-import { defineStore } from 'pinia'
-
+// stores/counter.ts
 export const useCounterStore = defineStore('counter', () => {
-  // ===== STATE =====
+  // State - như refs
   const count = ref(0)
-  const userName = ref('Guest')
-  const lastUpdated = ref<Date | null>(null)
-  const history = ref<number[]>([])
+  const name = ref('Counter')
 
-  // ===== GETTERS =====
-  const doubleCount = computed(() => count.value * 2)
-  const doubleCountPlusOne = computed(() => doubleCount.value + 1)
-
-  // Getter với tham số
-  const getHistoryItem = computed(() => {
-    return (index: number) => history.value[index] ?? null
-  })
-
+  // Getters - như computed
+  const doubled = computed(() => count.value * 2)
   const isPositive = computed(() => count.value > 0)
-  const isEmpty = computed(() => count.value === 0)
 
-  // ===== ACTIONS =====
+  // Actions - functions
   function increment() {
     count.value++
-    lastUpdated.value = new Date()
-    history.value.push(count.value)
   }
 
   function decrement() {
     count.value--
-    lastUpdated.value = new Date()
-  }
-
-  async function fetchInitialCount() {
-    try {
-      const response = await $fetch<{ count: number }>('/api/counter')
-      count.value = response.count
-      lastUpdated.value = new Date()
-    } catch (error) {
-      console.error('Failed to fetch count:', error)
-      throw error
-    }
-  }
-
-  function setCount(newCount: number) {
-    if (newCount < 0) {
-      throw new Error('Count cannot be negative')
-    }
-    count.value = newCount
-    history.value.push(newCount)
   }
 
   function reset() {
-    // Manual reset for setup store
     count.value = 0
-    userName.value = 'Guest'
-    lastUpdated.value = null
-    history.value = []
   }
 
-  // ⚠️ BẮT BUỘC: Phải return tất cả refs, computed, functions
+  function setCount(value: number) {
+    count.value = value
+  }
+
+  // Return để expose ra
   return {
-    // State
+    // State (read-write)
     count,
-    userName,
-    lastUpdated,
-    history,
-    // Getters
-    doubleCount,
-    doubleCountPlusOne,
-    getHistoryItem,
+    name,
+    // Getters (read-only)
+    doubled,
     isPositive,
-    isEmpty,
     // Actions
     increment,
     decrement,
-    fetchInitialCount,
-    setCount,
-    reset
+    reset,
+    setCount
   }
 })
 ```
 
-### So sánh Option Store vs Setup Store
+### 1.2 Sử dụng
 
-| Tiêu chí | Option Store | Setup Store |
-|----------|--------------|-------------|
-| Cú pháp | Object-based | Composition API |
-| `this` context | Có (`this.count`) | Không (dùng biến) |
-| `$reset()` | Có sẵn | Phải tự viết |
-| TypeScript | Cần khai báo kiểu | Inference tự động |
-| Reusability | Hạn chế | Tốt (có thể extract logic) |
-| Mixins | Hỗ trợ | Không hỗ trợ |
-| Khuyến nghị | Đơn giản, nhanh | Phức tạp, TypeScript |
+```vue
+<script setup lang="ts">
+// Auto-imported - không cần import!
+const counterStore = useCounterStore()
 
-### Setup Store - Best Practice cho TypeScript
+// Đọc state
+console.log(counterStore.count)
+console.log(counterStore.doubled)
+
+// Gọi actions
+counterStore.increment()
+counterStore.setCount(10)
+</script>
+```
+
+---
+
+## 2. Option Store Pattern
+
+### 2.1 Cú pháp
 
 ```typescript
-// stores/user.ts - Ví dụ thực tế
-import { defineStore } from 'pinia'
-import type { User, UserPreferences } from '~/types'
+// stores/counter-options.ts
+export const useCounterOptionsStore = defineStore('counter', {
+  // State
+  state: () => ({
+    count: 0,
+    name: 'Counter'
+  }),
 
-interface UserState {
-  user: User | null
-  preferences: UserPreferences
-  isLoading: boolean
-  error: string | null
+  // Getters
+  getters: {
+    doubled: (state) => state.count * 2,
+    isPositive: (state) => state.count > 0
+  },
+
+  // Actions
+  actions: {
+    increment() {
+      this.count++
+    },
+    decrement() {
+      this.count--
+    },
+    reset() {
+      this.count = 0
+    }
+  }
+})
+```
+
+### 2.2 So sánh Setup vs Options
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    SETUP vs OPTIONS STORE                               │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  SETUP STORE:                                                     │
+│  ├── Khuyến nghị cho code mới                                    │
+│  ├── TypeScript-friendly                                           │
+│  ├── Gần với <script setup>                                      │
+│  └── Dùng ref/computed trực tiếp                                 │
+│                                                                     │
+│  OPTIONS STORE:                                                    │
+│  ├── Legacy support                                               │
+│  ├── Vuex-like                                                   │
+│  ├── Dùng this.xxx                                               │
+│  └── Quen thuộc với Vuex users                                   │
+│                                                                     │
+│  → Khuyến nghị: Dùng SETUP STORE                              │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 3. Getters
+
+### 3.1 Read-only Getters
+
+```typescript
+export const useProductStore = defineStore('products', () => {
+  const products = ref<Product[]>([])
+
+  // Getter: Filtered list
+  const expensiveProducts = computed(() =>
+    products.value.filter(p => p.price > 100)
+  )
+
+  // Getter: Transformed data
+  const productNames = computed(() =>
+    products.value.map(p => p.name)
+  )
+
+  // Getter: Aggregated value
+  const totalValue = computed(() =>
+    products.value.reduce((sum, p) => sum + p.price, 0)
+  )
+
+  // Getter: Find by ID
+  const getProductById = computed(() => (id: number) =>
+    products.value.find(p => p.id === id)
+  )
+
+  return {
+    products,
+    expensiveProducts,
+    productNames,
+    totalValue,
+    getProductById
+  }
+})
+```
+
+### 3.2 Getters với Parameters
+
+```typescript
+// Cách 1: Computed trả về function
+const productsByCategory = computed(() => (category: string) =>
+  products.value.filter(p => p.category === category)
+)
+
+// Sử dụng
+const electronics = productStore.productsByCategory('electronics')
+
+// Cách 2: Regular function (không cached)
+function findProduct(id: number) {
+  return products.value.find(p => p.id === id)
 }
+```
 
-export const useUserStore = defineStore('user', () => {
-  // ===== STATE =====
+---
+
+## 4. Actions
+
+### 4.1 Synchronous Actions
+
+```typescript
+export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
-  const preferences = ref<UserPreferences>({
-    theme: 'light',
-    language: 'en',
-    notifications: true
-  })
-  const isLoading = ref(false)
-  const error = ref<string | null>(null)
 
-  // ===== GETTERS =====
-  const isAuthenticated = computed(() => !!user.value)
-  const userName = computed(() => user.value?.name ?? 'Guest')
-  const userInitials = computed(() => {
-    if (!user.value?.name) return 'G'
-    return user.value.name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2)
-  })
-
-  // ===== ACTIONS =====
-  async function login(credentials: { email: string; password: string }) {
-    isLoading.value = true
-    error.value = null
-
-    try {
-      const response = await $fetch<{ user: User; token: string }>('/api/auth/login', {
-        method: 'POST',
-        body: credentials
-      })
-      user.value = response.user
-      return response
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Login failed'
-      throw e
-    } finally {
-      isLoading.value = false
-    }
+  function setUser(newUser: User) {
+    user.value = newUser
   }
 
-  async function fetchCurrentUser() {
-    if (user.value) return // Đã có user
-
-    isLoading.value = true
-    error.value = null
-
-    try {
-      user.value = await $fetch<User>('/api/auth/me')
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to fetch user'
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  function logout() {
+  function clearUser() {
     user.value = null
   }
+})
+```
 
-  function updatePreferences(updates: Partial<UserPreferences>) {
-    preferences.value = { ...preferences.value, ...updates }
+### 4.2 Async Actions
+
+```typescript
+export const useUserStore = defineStore('users', () => {
+  const users = ref<User[]>([])
+  const loading = ref(false)
+  const error = ref<string | null>(null)
+
+  async function fetchUsers() {
+    loading.value = true
+    error.value = null
+
+    try {
+      users.value = await $fetch('/api/users')
+    } catch (e: any) {
+      error.value = e.message || 'Failed to fetch users'
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function createUser(data: CreateUserData) {
+    const newUser = await $fetch<User>('/api/users', {
+      method: 'POST',
+      body: data
+    })
+    users.value.push(newUser)
+    return newUser
   }
 
   return {
-    // State (readonly refs để prevent direct mutation)
-    user: readonly(user),
-    preferences: readonly(preferences),
-    isLoading: readonly(isLoading),
-    error: readonly(error),
-    // Getters
-    isAuthenticated,
-    userName,
-    userInitials,
-    // Actions
-    login,
-    fetchCurrentUser,
-    logout,
-    updatePreferences
+    users,
+    loading,
+    error,
+    fetchUsers,
+    createUser
   }
 })
 ```
 
----
-
-## 2.3. Auto-Imports Store trong Nuxt
-
-### Tại sao không cần import?
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                    NUXT AUTO-IMPORT SYSTEM                       │
-│                                                                   │
-│  Khi Nuxt khởi động, nó quét các thư mục:                       │
-│  ├── app/composables/     → Auto-import tất cả exports         │
-│  ├── app/utils/           → Auto-import tất cả exports         │
-│  └── app/stores/          → Auto-import tất cả exports (Pinia) │
-│                                                                   │
-│  Quy tắc đặt tên:                                                │
-│  export const useXxxStore = defineStore(...)                    │
-│           ↑                                                       │
-│  ├── Phải bắt đầu bằng "use"                                    │
-│  └── Phải kết thúc bằng "Store"                                 │
-│                                                                   │
-│  Result: Bạn có thể gọi useXxxStore() ở BẤT KỲ ĐÂU             │
-│          mà không cần import!                                    │
-└──────────────────────────────────────────────────────────────────┘
-```
-
-### Ví dụ Auto-Imports
+### 4.3 Actions với Parameters
 
 ```typescript
-// stores/auth.ts
-export const useAuthStore = defineStore('auth', () => {
-  const isLoggedIn = ref(false)
-  return { isLoggedIn }
-})
-```
+export const useCartStore = defineStore('cart', () => {
+  const items = ref<CartItem[]>([])
 
-```vue
-<!-- pages/dashboard.vue -->
-<script setup lang="ts">
-// ✅ Không cần import! Nuxt tự động tìm useAuthStore
-const authStore = useAuthStore()
+  function addItem(product: Product, quantity = 1) {
+    const existingItem = items.value.find(i => i.productId === product.id)
 
-// Hoặc destructuring với storeToRefs để giữ reactivity
-const { isLoggedIn } = storeToRefs(authStore)
-</script>
-```
-
-```vue
-<!-- components/Sidebar.vue -->
-<script setup lang="ts">
-// ✅ Cũng không cần import!
-const { isLoggedIn, user } = storeToRefs(useAuthStore())
-const { logout } = useAuthStore()
-</script>
-```
-
-### Quy tắc đặt tên Store
-
-```typescript
-// ✅ ĐÚNG - Auto-import hoạt động
-export const useAuthStore = defineStore('auth', ...)
-export const useCartStore = defineStore('cart', ...)
-export const useProductStore = defineStore('product', ...)
-
-// ❌ SAI - Auto-import KHÔNG hoạt động
-export const authStore = defineStore('auth', ...)           // Thiếu "use"
-export const useAuth = defineStore('auth', ...)             // Thiếu "Store"
-export const useAuthStoreForNuxt = defineStore('auth', ...) // Quá dài
-```
-
-### Cấu hình Auto-Import tùy chỉnh
-
-```typescript
-// nuxt.config.ts
-export default defineNuxtConfig({
-  modules: ['@pinia/nuxt'],
-
-  pinia: {
-    // Thư mục tìm kiếm stores (glob pattern)
-    storesDirs: [
-      './stores/**',      // Default
-      './app/stores/**',  // Thêm thư mục khác
-    ],
-
-    // Tùy chỉnh auto-import
-    autoImport: {
-      // Import these functions from 'pinia' instead of auto-importing
-      imports: ['defineStore', 'storeToRefs'],
-
-      // Disable auto-import hoàn toàn
-      // autoImport: false,
+    if (existingItem) {
+      existingItem.quantity += quantity
+    } else {
+      items.value.push({
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        quantity
+      })
     }
   }
+
+  function removeItem(productId: number) {
+    const index = items.value.findIndex(i => i.productId === productId)
+    if (index !== -1) {
+      items.value.splice(index, 1)
+    }
+  }
+
+  function updateQuantity(productId: number, quantity: number) {
+    const item = items.value.find(i => i.productId === productId)
+    if (item) {
+      if (quantity <= 0) {
+        removeItem(productId)
+      } else {
+        item.quantity = quantity
+      }
+    }
+  }
+
+  return {
+    items,
+    addItem,
+    removeItem,
+    updateQuantity
+  }
 })
 ```
 
-### Cách hoạt động (Low-level)
+---
+
+## 5. Store với Plugins
+
+### 5.1 Persistence Plugin
 
 ```typescript
-// Khi Nuxt build, nó tạo file .nuxt/auto-imports.ts:
-/*
-┌─────────────────────────────────────────────────────────────┐
-│                  .nuxt/auto-imports.d.ts                     │
-├─────────────────────────────────────────────────────────────┤
-│  // Auto-generated - KHÔNG SỬA TAY                           │
-│  declare function useAuthStore(...): ReturnType<...>       │
-│  declare function useCartStore(...): ReturnType<...>       │
-│  declare function useProductStore(...): ReturnType<...>    │
-│                                                              │
-│  declare const storeToRefs: typeof import('pinia')['storeToRefs']
-└─────────────────────────────────────────────────────────────┘
-*/
+// plugins/pinia-persist.client.ts
+export const piniaPlugin = definePiniaPlugin(({ store }) => {
+  // Chỉ persist các stores cụ thể
+  if (store.$id === 'user' || store.$id === 'cart') {
+    // Restore state
+    const savedState = localStorage.getItem(store.$id)
+    if (savedState) {
+      store.$patch(JSON.parse(savedState))
+    }
 
-// Bạn chỉ cần viết:
-// stores/auth.ts
-export const useAuthStore = defineStore('auth', () => { ... })
-
-// Nuxt tự động generate type declaration và import
-// → Bạn không cần import thủ công!
-```
-
----
-
-## 2.4. Sử dụng Store trong Component
-
-### Basic Usage
-
-```vue
-<!-- components/Counter.vue -->
-<script setup lang="ts">
-// Lấy store instance
-const counterStore = useCounterStore()
-
-// Gọi action
-const handleIncrement = () => {
-  counterStore.increment()
-}
-
-// Truy cập state trực tiếp
-const currentCount = counterStore.count
-</script>
-
-<template>
-  <div class="counter">
-    <h2>Count: {{ currentCount }}</h2>
-    <h3>Double: {{ counterStore.doubleCount }}</h3>
-    <button @click="handleIncrement">+</button>
-  </div>
-</template>
-```
-
-### Với storeToRefs (Giữ reactivity khi destructuring)
-
-```vue
-<!-- components/UserProfile.vue -->
-<script setup lang="ts">
-const authStore = useAuthStore()
-
-// ❌ SAI: Mất reactivity
-const { user, isLoggedIn } = authStore
-// user và isLoggedIn không còn reactive!
-
-// ✅ ĐÚNG: Dùng storeToRefs
-const { user, isLoggedIn } = storeToRefs(authStore)
-
-// ✅ HOẶC: Chỉ đọc, không cần storeToRefs
-const user = computed(() => authStore.user)
-const isLoggedIn = computed(() => authStore.isAuthenticated)
-
-// Actions không cần storeToRefs
-const { login, logout } = authStore
-</script>
-
-<template>
-  <div v-if="isLoggedIn">
-    <p>Welcome, {{ user?.name }}</p>
-    <button @click="logout">Logout</button>
-  </div>
-  <div v-else>
-    <button @click="login({ email: 'test@test.com', password: '123' })">
-      Login
-    </button>
-  </div>
-</template>
-```
-
-### Computed Properties từ Store
-
-```vue
-<script setup lang="ts">
-const cartStore = useCartStore()
-
-// Tạo computed từ store getters
-const canCheckout = computed(() => {
-  return cartStore.itemCount > 0 && !cartStore.isProcessing
+    // Save state on change
+    store.$subscribe((mutation, state) => {
+      localStorage.setItem(store.$id, JSON.stringify(state))
+    })
+  }
 })
+```
 
-const cartSummary = computed(() => ({
-  items: cartStore.itemCount,
-  total: cartStore.totalPrice,
-  formattedTotal: cartStore.formattedTotal
-}))
-</script>
+### 5.2 Logger Plugin
 
-<template>
-  <button :disabled="!canCheckout">
-    Checkout ({{ cartSummary.formattedTotal }})
-  </button>
-</template>
+```typescript
+// plugins/pinia-logger.ts
+export const piniaLoggerPlugin = definePiniaPlugin(({}) => {
+  return ({ store }) => {
+    // Log state changes
+    store.$subscribe((mutation, state) => {
+      console.log(`[${store.$id}]`, mutation.type, mutation.storeId)
+    })
+
+    // Log actions
+    store.$onAction(({ name, args }) => {
+      console.log(`[${store.$id}] Action: ${name}`, args)
+    })
+  }
+})
 ```
 
 ---
 
-## 2.5. Tóm tắt
+## 🎯 Tóm Tắt
 
 ```
-┌──────────────────────────────────────────────────────────────────┐
-│                    STORE PATTERNS SUMMARY                         │
-│                                                                   │
-│  1. Setup Store (Khuyến nghị)                                    │
-│     ├── Dùng ref()/computed() thay vì state/getters              │
-│     ├── Tất cả phải return              │
-│     ├── Type inference tốt hơn                                  │
-│     └── Tái sử dụng logic dễ hơn                                │
-│                                                                   │
-│  2. Auto-Imports                                                  │
-│     ├── Đặt tên: useXxxStore                                    │
-│     ├── Đặt trong: stores/ hoặc app/stores/                    │
-│     └── KHÔNG cần import trong component                        │
-│                                                                   │
-│  3. storeToRefs()                                                │
-│     ├── Dùng khi destructuring state/getters                    │
-│     └── Actions không cần storeToRefs                            │
-│                                                                   │
-│  4. Readonly State                                               │
-│     ├── Dùng readonly() cho state trong return                  │
-│     └── Buộc mutation qua actions                                │
-└──────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                    PINIA STORE CHEAT SHEET                                │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  SETUP STORE (Khuyến nghị):                                        │
+│  ────────────────────────────────────────                            │
+│  export const useCounterStore = defineStore('counter', () => {       │
+│    const count = ref(0)                                             │
+│    const doubled = computed(() => count.value * 2)                  │
+│                                                                     │
+│    function increment() { count.value++ }                            │
+│                                                                     │
+│    return { count, doubled, increment }                              │
+│  })                                                                 │
+│                                                                     │
+│  USAGE:                                                             │
+│  const store = useCounterStore()                                     │
+│  store.count++                                                       │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## ▶️ Tiếp Theo
+
+→ [03-best-practices.md](03-best-practices.md) - Best Practices
