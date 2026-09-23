@@ -1,6 +1,6 @@
 # Routing Cơ Bản
 
-> **Mục tiêu:** Hiểu cách Nuxt tạo routes tự động từ file system.
+> **Mục tiêu:** Hiểu cách Nuxt tạo routes tự động từ file system trong Nuxt 4.
 
 ## Mục lục
 
@@ -14,52 +14,75 @@
 
 ## 1. Routing là gì?
 
-### Khái niệm
+### 1.1 Dùng để làm gì?
+
+**Routing = Điều hướng giữa các trang trong ứng dụng.**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    ROUTING LÀ GÌ?                                        │
+│                    ROUTING - GIẢI THÍCH ĐƠN GIẢN                   │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  Routing = Điều hướng giữa các trang trong ứng dụng           │
-│                                                                     │
 │  URL                     →         Component/Page                  │
-│  ────────────────────────────────────────────────────────────     │
+│  ────────────────────────────────────────────────────────────      │
 │  /                       →         pages/index.vue                 │
-│  /about                 →         pages/about.vue                 │
-│  /blog                  →         pages/blog/index.vue            │
-│  /blog/vue3             →         pages/blog/[slug].vue         │
+│  /about                 →         pages/about.vue                  │
+│  /blog                  →         pages/blog/index.vue             │
+│  /blog/vue3             →         pages/blog/[slug].vue          │
 │                                                                     │
-│  Khi user click link → URL thay đổi → Page thay đổi           │
+│  Khi user click link → URL thay đổi → Page thay đổi            │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### So sánh Vue Router và Nuxt
+### 1.2 Có Sẵn Hay Cần Custom?
+
+**ROUTING LÀ TÍNH NĂNG CÓ SẴN CỦA NUXT 4!**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    VUE ROUTER vs NUXT ROUTING                          │
+│                    NUXT TỰ LÀM HẾT CHO BẠN!                        │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  VUE ROUTER (Vue thuần):                                         │
-│  ──────────────────────────────────────────────────────────────     │
+│  ──────────────────────────────────────────────────────────────    │
 │  1. Cài đặt: npm install vue-router                             │
-│  2. Tạo router config: router/index.js                          │
-│  3. Định nghĩa routes:                                         │
-│     const routes = [                                             │
-│       { path: '/', component: Home },                          │
-│       { path: '/about', component: About }                      │
-│     ]                                                           │
+│  2. Tạo router config: router/index.ts                          │
+│  3. Định nghĩa routes                                          │
 │  4. Register router trong app                                   │
 │                                                                     │
-│  NUXT ROUTING:                                                  │
+│  NUXT ROUTING (Nuxt 4):                                         │
 │  ────────────────────────────────────────────────────────────     │
 │  1. KHÔNG cần cài đặt gì!                                      │
-│  2. Tạo file trong pages/                                       │
+│  2. Tạo file trong app/pages/                                   │
 │  3. Xong! Routes tự động được tạo                              │
 │                                                                     │
 │  → FILE PATH = ROUTE PATH                                       │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 1.3 Cơ Chế Hoạt Động - Behind The Scenes
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    NUXT ROUTING HOẠT ĐỘNG NHƯ THẾ NÀO?          │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  1. NUXT SCAN THƯ MỤC                                          │
+│     Nuxt scan thư mục app/pages/                                 │
+│     └── app/pages/index.vue                                      │
+│     └── app/pages/blog/index.vue                                 │
+│     └── app/pages/blog/[slug].vue                               │
+│                                                                     │
+│  2. NUXT TẠO ROUTES                                           │
+│     Nuxt tự động map file path → route path                     │
+│     └── /              → index.vue                              │
+│     └── /blog          → blog/index.vue                         │
+│     └── /blog/:slug   → blog/[slug].vue                        │
+│                                                                     │
+│  3. VITE/VUE ROUTER RESOLVE                                     │
+│     Khi user navigate → render component tương ứng              │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -73,16 +96,19 @@
 ```
 📁 app/pages/
 ├── 📄 index.vue        → /                  (trang chủ)
-├── 📄 about.vue        → /about
-├── 📄 contact.vue     → /contact
-├── 📄 blog.vue         → /blog
-└── 📄 products.vue    → /products
+├── 📄 about.vue       → /about
+├── 📄 contact.vue    → /contact
+├── 📄 blog.vue        → /blog
+└── 📄 products.vue   → /products
 ```
 
 ### 2.2 Tạo Route đầu tiên
 
 ```vue
 <!-- app/pages/index.vue → URL: / -->
+<script setup lang="ts">
+</script>
+
 <template>
   <div>
     <h1>Trang Chủ</h1>
@@ -93,6 +119,9 @@
 
 ```vue
 <!-- app/pages/about.vue → URL: /about -->
+<script setup lang="ts">
+</script>
+
 <template>
   <div>
     <h1>Giới Thiệu</h1>
@@ -103,7 +132,7 @@
 
 ### 2.3 Nested Routes
 
-Nested routes là cách tổ chức routes theo cấu trúc phân cấp. Khi một route có sub-routes, parent page sẽ chứa `<NuxtPage />` để render nested pages.
+**Nested routes tổ chức routes theo cấu trúc phân cấp.**
 
 ```
 📁 app/pages/
@@ -115,11 +144,26 @@ Nested routes là cách tổ chức routes theo cấu trúc phân cấp. Khi m�
 ```
 
 **Cách hoạt động:**
-1. Khi vào `/blog` → render `blog.vue` với `NuxtPage` render `blog/index.vue`
-2. Khi vào `/blog/my-post` → render `blog.vue` với `NuxtPage` render `blog/[slug].vue`
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    NESTED ROUTES FLOW                                │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  URL: /blog                                                       │
+│  → Render blog.vue với <NuxtPage /> render blog/index.vue       │
+│                                                                     │
+│  URL: /blog/my-post                                              │
+│  → Render blog.vue với <NuxtPage /> render blog/[slug].vue       │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
 ```vue
 <!-- app/pages/blog.vue → /blog (parent layout) -->
+<script setup lang="ts">
+</script>
+
 <template>
   <div class="blog-layout">
     <h1>Blog</h1>
@@ -135,27 +179,21 @@ Nested routes là cách tổ chức routes theo cấu trúc phân cấp. Khi m�
 </template>
 ```
 
-**Khi nào dùng Nested Routes:**
-- Admin dashboard với sidebar navigation
-- Blog với header và sub-pages (danh sách, chi tiết, tạo mới)
-- User profile với tabs (thông tin, bài viết, cài đặt)
-
 ### 2.4 Catch-all Routes
 
 ```
 📁 app/pages/
 ├── 📄 index.vue           → /
 ├── 📄 [...slug].vue      → /* (bất kỳ URL nào)
-└── 📄 [[lang]].vue     → / hoặc /en, /vi (optional)
+└── 📄 [[lang]].vue       → / hoặc /en, /vi (optional)
 ```
 
 ```vue
 <!-- app/pages/[...slug].vue → Bắt mọi URL -->
-<script setup>
+<script setup lang="ts">
 const route = useRoute()
-const slugParts = route.params.slug  // Array
+const slugParts = route.params.slug as string[]  // Array
 
-console.log(slugParts)
 // /a/b/c → ['a', 'b', 'c']
 </script>
 
@@ -171,25 +209,33 @@ console.log(slugParts)
 
 ## 3. NuxtLink
 
-### 3.1 NuxtLink là gì?
+### 3.1 Dùng để làm gì?
+
+**`<NuxtLink>` = Thay thế cho `<a href="">` trong Nuxt.**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    NUXTLINK LÀ GÌ?                                      │
+│                    NUXTLINK KHÁC GÌ <a href="">?                    │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  <NuxtLink> = Thay thế cho <a href=""> trong Nuxt              │
-│                                                                     │
-│  Khác với <a>:                                                    │
+│  <NuxtLink> có những tính năng đặc biệt:                         │
 │  ├── Tự động prefetch trang khi link hiện trong viewport       │
 │  ├── Tự động thêm class "active" cho link hiện tại             │
 │  ├── Hỗ trợ page transitions                                     │
-│  └── Không reload toàn bộ page (SPA navigation)                 │
+│  └── Không reload toàn bộ page (SPA navigation)                  │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### 3.2 Cách sử dụng
+### 3.2 Có Sẵn Hay Cần Custom?
+
+**`<NuxtLink>` LÀ COMPONENT CÓ SẴN CỦA NUXT 4!**
+
+- Không cần import
+- Auto-imported từ Nuxt
+- Dùng thay cho `<a>` trong Nuxt
+
+### 3.3 Cách Sử Dụng
 
 ```vue
 <template>
@@ -214,7 +260,7 @@ console.log(slugParts)
 </template>
 ```
 
-### 3.3 Active State
+### 3.4 Active State
 
 ```vue
 <template>
@@ -253,7 +299,7 @@ console.log(slugParts)
 </style>
 ```
 
-### 3.4 Disable Prefetch
+### 3.5 Disable Prefetch
 
 ```vue
 <template>
@@ -261,8 +307,6 @@ console.log(slugParts)
   <NuxtLink to="/heavy-page" no-prefetch>
     Trang nặng
   </NuxtLink>
-
-  <!-- Hoặc tắt global prefetch trong nuxt.config.ts -->
 </template>
 ```
 
@@ -270,57 +314,45 @@ console.log(slugParts)
 
 ## 4. Dynamic Routes
 
-### 4.1 Dynamic Segment
+### 4.1 Cấu trúc Dynamic Routes
 
 ```
 📁 app/pages/
 ├── 📄 index.vue                  → /
-├── 📄 user.vue                 → /user
+├── 📄 user.vue                  → /user
 ├── 📄 user/[id].vue            → /user/:id
-└── 📄 user/[id]/[tab].vue    → /user/:id/:tab
+└── 📄 user/[id]/[tab].vue       → /user/:id/:tab
 ```
 
 ### 4.2 Lấy Params từ URL
 
 ```vue
 <!-- app/pages/user/[id].vue -->
-<script setup>
-// Lấy params từ URL
+<script setup lang="ts">
 const route = useRoute()
 
 // route.params.id sẽ có giá trị từ URL
-console.log(route.params.id)
-// /user/123 → 123
+// /user/123 → route.params.id = "123"
+const userId = route.params.id as string
 </script>
 
 <template>
   <div>
-    <h1>User ID: {{ route.params.id }}</h1>
+    <h1>User ID: {{ userId }}</h1>
   </div>
 </template>
 ```
 
-### 4.3 Dynamic Routes với Data
+### 4.3 Dynamic Routes với Data Fetching
 
 ```vue
 <!-- app/pages/blog/[slug].vue -->
-<script setup>
+<script setup lang="ts">
 const route = useRoute()
-const slug = route.params.slug
+const slug = route.params.slug as string
 
-// Mock data - tìm bài viết theo slug
-const posts = {
-  'vue3-guide': {
-    title: 'Hướng dẫn Vue 3',
-    content: 'Nội dung bài viết...'
-  },
-  'nuxt-intro': {
-    title: 'Giới thiệu Nuxt',
-    content: 'Nội dung bài viết...'
-  }
-}
-
-const post = computed(() => posts[slug])
+// Fetch bài viết theo slug
+const { data: post } = await useFetch(`/api/posts/${slug}`)
 </script>
 
 <template>
@@ -340,18 +372,18 @@ const post = computed(() => posts[slug])
 
 ```
 📁 app/pages/
-├── 📄 [[lang]].vue     → / hoặc /en, /vi, /fr
+├── 📄 [[lang]].vue       → / hoặc /en, /vi, /fr
 └── 📄 [[lang]]/
-    └── 📄 about.vue   → /about hoặc /en/about, /vi/about
+    └── 📄 about.vue      → /about hoặc /en/about, /vi/about
 ```
 
 ```vue
 <!-- app/pages/[[lang]].vue -->
-<script setup>
+<script setup lang="ts">
 const route = useRoute()
 
 // route.params.lang có thể là undefined, 'en', 'vi', etc.
-const lang = route.params.lang || 'vi'
+const lang = (route.params.lang as string) || 'vi'
 </script>
 ```
 
@@ -361,8 +393,10 @@ const lang = route.params.lang || 'vi'
 
 ### 5.1 useRoute - Lấy thông tin URL
 
+**Dùng để làm gì?** Lấy thông tin về URL hiện tại (params, query, path, etc.)
+
 ```vue
-<script setup>
+<script setup lang="ts">
 const route = useRoute()
 
 // Properties của route
@@ -382,8 +416,10 @@ watch(() => route.params.slug, (newSlug) => {
 
 ### 5.2 useRouter - Điều hướng
 
+**Dùng để làm gì?** Điều hướng đến trang khác (push, replace, back, etc.)
+
 ```vue
-<script setup>
+<script setup lang="ts">
 const router = useRouter()
 
 // Navigate đến một URL
@@ -392,12 +428,12 @@ function goToHome() {
 }
 
 // Navigate với params
-function goToUser(id) {
+function goToUser(id: string) {
   router.push(`/user/${id}`)
 }
 
 // Navigate với query
-function search(query) {
+function search(query: string) {
   router.push({ path: '/search', query: { q: query } })
 }
 
@@ -420,8 +456,10 @@ function goForward() {
 
 ### 5.3 navigateTo - Helper function
 
+**Dùng để làm gì?** Navigate đơn giản, có thể dùng trong setup (return được).
+
 ```vue
-<script setup>
+<script setup lang="ts">
 // navigateTo là shorthand cho router.push
 // Nên dùng vì ngắn gọn hơn
 
@@ -437,34 +475,66 @@ await navigateTo({ path: '/search', query: { q: 'vue' } })
 // Replace (không lưu history)
 await navigateTo('/new', { replace: true })
 
-// Redirect với middleware
+// Redirect với return (trong middleware)
 return navigateTo('/login')
 </script>
 ```
 
-### 5.4 Ví dụ: Navigation với nhiều cách
+### 5.4 So Sánh useRoute vs useRouter vs navigateTo
 
-```vue
-<script setup>
-// Cách 1: NuxtLink (trong template)
-const to = '/about'
-</script>
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    SO SÁNH: useRoute vs useRouter vs navigateTo     │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  useRoute():                                                       │
+│  ├── ĐỌC thông tin URL                                            │
+│  ├── Lấy params, query, path                                       │
+│  └── Ví dụ: route.params.id                                       │
+│                                                                     │
+│  useRouter():                                                      │
+│  ├── ĐIỀU HƯỚNG (navigation)                                      │
+│  ├── push(), replace(), back()                                     │
+│  └── Ví dụ: router.push('/about')                                  │
+│                                                                     │
+│  navigateTo():                                                     │
+│  ├── ĐIỀU HƯỚNG (simplified)                                     │
+│  ├── Dùng được trong setup()                                        │
+│  └── Ví dụ: await navigateTo('/about')                            │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
-<template>
-  <div>
-    <!-- Trong template: dùng NuxtLink -->
-    <NuxtLink to="/">Home</NuxtLink>
+### 5.5 Cases Thực Tế Hay Dùng
 
-    <!-- Dynamic link -->
-    <NuxtLink :to="`/blog/${slug}`">Read more</NuxtLink>
-
-    <!-- Programmatic navigation -->
-    <button @click="router.push('/about')">Go to About</button>
-
-    <!-- Hoặc dùng navigateTo -->
-    <button @click="navigateTo('/contact')">Go to Contact</button>
-  </div>
-</template>
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    ROUTING - CASE THỰC TẾ                           │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  CASE 1: REDIRECT SAU ACTION                                     │
+│  ───────────────────────────────────────                            │
+│  async function handleLogin() {                                     │
+│    await $fetch('/api/login', ...)                                 │
+│    navigateTo('/dashboard')  // Redirect sau login                  │
+│  }                                                                 │
+│                                                                     │
+│  CASE 2: DYNAMIC NAVIGATION                                       │
+│  ───────────────────────────────────────                            │
+│  <NuxtLink :to="`/products/${product.id}`">                       │
+│  Product {{ product.id }}                                          │
+│  </NuxtLink>                                                       │
+│                                                                     │
+│  CASE 3: QUERY PARAMS                                             │
+│  ───────────────────────────────────────                            │
+│  router.push({ path: '/search', query: { q: 'vue', page: 1 } })  │
+│  // URL: /search?q=vue&page=1                                     │
+│                                                                     │
+│  CASE 4: MIDDLEWARE REDIRECT                                      │
+│  ───────────────────────────────────────                            │
+│  if (!isAuth) return navigateTo('/login')                           │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -473,28 +543,32 @@ const to = '/about'
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    ROUTING CHEAT SHEET                                   │
+│                    ROUTING CHEAT SHEET                               │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  FILE → ROUTE:                                                    │
-│  ├── pages/index.vue       → /                                   │
-│  ├── pages/about.vue      → /about                               │
-│  ├── pages/blog/[slug].vue → /blog/:slug                        │
-│  └── pages/[...all].vue   → /*                                   │
+│  ├── app/pages/index.vue       → /                                   │
+│  ├── app/pages/about.vue      → /about                              │
+│  ├── app/pages/blog/[slug].vue → /blog/:slug                       │
+│  └── app/pages/[...all].vue   → /*                                  │
 │                                                                     │
 │  NAVIGATION:                                                      │
-│  ├── <NuxtLink to="/">       → Template link                     │
-│  ├── router.push('/path')    → Programmatic                     │
-│  └── navigateTo('/path')     → Simple redirect                   │
+│  ├── <NuxtLink to="/">       → Template link                       │
+│  ├── router.push('/path')     → Programmatic navigation             │
+│  └── navigateTo('/path')     → Simple redirect (dùng trong setup) │
 │                                                                     │
-│  ROUTE INFO:                                                      │
-│  ├── route.params        → Dynamic segments                      │
-│  ├── route.query         → Query strings                        │
-│  └── route.path          → Current path                         │
+│  ROUTE INFO (useRoute()):                                          │
+│  ├── route.params        → Dynamic segments                        │
+│  ├── route.query         → Query strings                           │
+│  ├── route.path          → Current path                           │
+│  └── route.fullPath      → Full path + query                      │
 │                                                                     │
 │  ACTIVE STATE:                                                    │
-│  ├── .router-link-active       → Active prefix                   │
-│  └── .router-link-exact-active → Exact match                     │
+│  ├── .router-link-active       → Active prefix                      │
+│  └── .router-link-exact-active → Exact match                        │
+│                                                                     │
+│  LAZY LOADING:                                                    │
+│  └── <NuxtLink no-prefetch> → Tắt prefetch                        │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```

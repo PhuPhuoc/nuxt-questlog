@@ -1,6 +1,6 @@
 # State Management
 
-> **Mục tiêu:** Hiểu cách quản lý state trong Nuxt với ref, useState, và Pinia.
+> **Mục tiêu:** Hiểu cách quản lý state trong Nuxt 4 với ref, useState, và Pinia.
 
 ## Mục lục
 
@@ -14,11 +14,13 @@
 
 ## 1. State là gì?
 
-### Khái niệm
+### 1.1 Dùng để làm gì?
+
+**State = Dữ liệu mà app LƯU TRỮ và QUẢN LÝ.**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    STATE LÀ GÌ?                                          │
+│                    STATE - GIẢI THÍCH ĐƠN GIẢN                      │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  State = Dữ liệu mà app LƯU TRỮ và QUẢN LÝ                     │
@@ -32,7 +34,7 @@
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Các loại State trong Nuxt
+### 1.2 Các Loại State trong Nuxt
 
 Nuxt có 3 cách quản lý state, từ đơn giản đến phức tạp:
 
@@ -46,11 +48,13 @@ Nuxt có 3 cách quản lý state, từ đơn giản đến phức tạp:
 
 ## 2. ref() - Local State
 
-### 2.1 Khi nào dùng?
+### 2.1 Dùng để làm gì?
+
+**`ref()` = Tạo reactive state CHỈ trong 1 component.**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    KHI NÀO DÙNG ref()?                                │
+│                    KHI NÀO DÙNG ref()?                              │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  ✅ Dùng ref() khi:                                               │
@@ -71,10 +75,17 @@ Nuxt có 3 cách quản lý state, từ đơn giản đến phức tạp:
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### 2.2 Ví dụ: Form State
+### 2.2 Có Sẵn Hay Cần Custom?
+
+**`ref()` LÀ COMPOSABLE CÓ SẴN CỦA VUE 3 + NUXT 4!**
+
+- Auto-imported
+- Không cần import từ 'vue'
+
+### 2.3 Ví dụ: Form State
 
 ```vue
-<script setup>
+<script setup lang="ts">
 // Local state - chỉ dùng trong component này
 const form = ref({
   name: '',
@@ -83,7 +94,7 @@ const form = ref({
 })
 
 const isSubmitting = ref(false)
-const errors = ref({})
+const errors = ref<Record<string, string>>({})
 
 async function handleSubmit() {
   // Validate
@@ -116,10 +127,10 @@ async function handleSubmit() {
 </script>
 ```
 
-### 2.3 Ví dụ: Local Toggle
+### 2.4 Ví dụ: Local Toggle
 
 ```vue
-<script setup>
+<script setup lang="ts">
 const isSidebarOpen = ref(false)
 const isModalOpen = ref(false)
 
@@ -133,11 +144,13 @@ function toggleSidebar() {
 
 ## 3. useState() - Shared State
 
-### 3.1 Khi nào dùng?
+### 3.1 Dùng để làm gì?
+
+**`useState()` = Tạo reactive state CHIA SẺ giữa các components, SSR-safe.**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    KHI NÀO DÙNG useState()?                              │
+│                    KHI NÀO DÙNG useState()?                         │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  ✅ Dùng useState() khi:                                          │
@@ -158,11 +171,19 @@ function toggleSidebar() {
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### 3.2 Cú pháp cơ bản
+### 3.2 Có Sẵn Hay Cần Custom?
 
-```typescript
-// Tạo state
-const count = useState('count', () => 0)
+**`useState()` LÀ COMPOSABLE CÓ SẴN CỦA NUXT 4!**
+
+- Auto-imported
+- SSR-safe (state được serialize từ server → deserialize trên client)
+- Không bị pollution giữa các requests
+
+### 3.3 Cú Pháp Cơ Bản
+
+```ts
+// Tạo state - key phải unique!
+const count = useState<number>('count', () => 0)
 
 // Đọc state
 console.log(count.value) // 0
@@ -171,16 +192,16 @@ console.log(count.value) // 0
 count.value = 10
 
 // Computed state
-const doubleCount = useState('doubleCount', () => count.value * 2)
+const doubleCount = useState<number>('doubleCount', () => count.value * 2)
 ```
 
-### 3.3 Ví dụ: Theme Toggle
+### 3.4 Ví dụ: Theme Toggle
 
-```typescript
-// composables/useTheme.ts
+```ts
+// app/composables/useTheme.ts
 export const useTheme = () => {
   // State được share giữa tất cả components
-  const theme = useState('theme', () => 'light')
+  const theme = useState<'light' | 'dark'>('theme', () => 'light')
 
   const isDark = computed(() => theme.value === 'dark')
 
@@ -198,7 +219,7 @@ export const useTheme = () => {
 
 ```vue
 <!-- Header.vue -->
-<script setup>
+<script setup lang="ts">
 const { theme, isDark, toggleTheme } = useTheme()
 </script>
 
@@ -213,7 +234,7 @@ const { theme, isDark, toggleTheme } = useTheme()
 
 ```vue
 <!-- Sidebar.vue -->
-<script setup>
+<script setup lang="ts">
 // Cùng theme state!
 const { theme, isDark } = useTheme()
 </script>
@@ -225,33 +246,37 @@ const { theme, isDark } = useTheme()
 </template>
 ```
 
-### 3.4 SSR Safety
+### 3.5 SSR Safety
 
-```typescript
-// useState() tự động:
-// 1. Serialize state từ server
-// 2. Deserialize state trên client
-// 3. Tránh pollution giữa các requests
-
-// Ví dụ: User cart
-const cart = useState('cart', () => ({
-  items: [],
-  total: 0
-}))
-
-// Server: Mỗi user có cart riêng
-// Client: Hydrate từ server state
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    useState SSR SAFETY                               │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  useState() tự động:                                            │
+│  1. Serialize state từ server                                   │
+│  2. Deserialize state trên client                               │
+│  3. Tránh pollution giữa các requests                          │
+│                                                                     │
+│  Ví dụ: User cart                                               │
+│  ────────────────────────                                         │
+│  Server: Mỗi user có cart riêng                                │
+│  Client: Hydrate từ server state                                 │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## 4. Pinia - Global Store
 
-### 4.1 Khi nào dùng?
+### 4.1 Dùng để làm gì?
+
+**Pinia = Global store cho state PHỨC TẠP với business logic.**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    KHI NÀO DÙNG PINIA?                                  │
+│                    KHI NÀO DÙNG PINIA?                             │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  ✅ Dùng Pinia khi:                                               │
@@ -269,9 +294,30 @@ const cart = useState('cart', () => ({
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### 4.2 Tạo Store
+### 4.2 Có Sẵn Hay Cần Custom?
 
-```typescript
+**PINIA LÀ PLUGIN ĐƯỢC KHUYẾN NGHỊ TRONG NUXT 4!**
+
+- Cần cài đặt: `@pinia/nuxt`
+- Auto-imported trong Nuxt
+- Devtools hỗ trợ tốt
+
+### 4.3 Setup Pinia
+
+```bash
+npm install @pinia/nuxt pinia
+```
+
+```ts
+// nuxt.config.ts
+export default defineNuxtConfig({
+  modules: ['@pinia/nuxt']
+})
+```
+
+### 4.4 Tạo Store
+
+```ts
 // app/stores/auth.ts
 export const useAuthStore = defineStore('auth', () => {
   // State
@@ -334,10 +380,10 @@ export const useAuthStore = defineStore('auth', () => {
 })
 ```
 
-### 4.3 Sử dụng Store
+### 4.5 Sử Dụng Store
 
 ```vue
-<script setup>
+<script setup lang="ts">
 // Auto-imported - không cần import!
 const authStore = useAuthStore()
 
@@ -359,10 +405,10 @@ async function handleLogin() {
 </script>
 ```
 
-### 4.4 Destructure với storeToRefs
+### 4.6 Destructure với storeToRefs
 
 ```vue
-<script setup>
+<script setup lang="ts">
 const authStore = useAuthStore()
 
 // ❌ SAI - Mất reactivity!
@@ -377,12 +423,20 @@ const { login, logout } = authStore
 </script>
 ```
 
-### 4.5 Cart Store Example
+### 4.7 Cart Store Example
 
-```typescript
+```ts
 // app/stores/cart.ts
+interface CartItem {
+  id: number
+  name: string
+  price: number
+  image?: string
+  quantity: number
+}
+
 export const useCartStore = defineStore('cart', () => {
-  // State - persist với useCookie
+  // State
   const items = ref<CartItem[]>([])
   const shippingFee = ref(30000)
 
@@ -445,19 +499,19 @@ export const useCartStore = defineStore('cart', () => {
 
 ## 5. Khi Nào Dùng Cái Nào?
 
-### So sánh nhanh
+### 5.1 So Sánh Nhanh
 
 | Loại | Khi nào | Ví dụ |
 |------|---------|-------|
 | `ref()` | Local, đơn giản | Form input, local toggle |
 | `useState()` | Shared, đơn giản | Theme, sidebar |
-| `Pinia` | Complex, logic | Auth, Cart, Products |
+| Pinia | Complex, logic | Auth, Cart, Products |
 
-### Decision Tree
+### 5.2 Decision Tree
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    STATE MANAGEMENT DECISION TREE                        │
+│                    STATE MANAGEMENT DECISION TREE                   │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  State cần chia sẻ GIỮA CÁC components?                      │
@@ -487,29 +541,60 @@ export const useCartStore = defineStore('cart', () => {
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Examples theo use case
+### 5.3 Cases Thực Tế
 
 ```vue
 <!-- 1. Local state - ref() -->
-<script setup>
+<script setup lang="ts">
+// Form input - chỉ trong 1 component
 const searchQuery = ref('')
 const isLoading = ref(false)
 </script>
 
 <!-- 2. Shared simple state - useState() -->
-<script setup>
-// composables/useUI.ts
-const sidebarOpen = useState('sidebar', () => false)
-const notifications = useState('notifications', () => [])
+<script setup lang="ts">
+// app/composables/useUI.ts
+// Theme - chia sẻ giữa Header, Sidebar, etc.
+const sidebarOpen = useState<boolean>('sidebar', () => false)
+const notifications = useState<Notification[]>('notifications', () => [])
 </script>
 
 <!-- 3. Complex state - Pinia -->
-<script setup>
-// stores/cart.ts
+<script setup lang="ts">
+// Cart - có logic phức tạp
 const cart = useCartStore()
 const auth = useAuthStore()
 const products = useProductStore()
 </script>
+```
+
+### 5.4 So Sánh Chi Tiết
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    ref() vs useState() vs Pinia                     │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ref():                                                          │
+│  ├── Phạm vi: 1 component                                        │
+│  ├── SSR: Safe (nhưng mỗi component có instance riêng)           │
+│  ├── Devtools: Không support native                               │
+│  └── Persistence: Không                                          │
+│                                                                     │
+│  useState():                                                     │
+│  ├── Phạm vi: Toàn app (shared)                                   │
+│  ├── SSR: ✅ Safe - serialize/deserialize tự động                │
+│  ├── Devtools: Có support                                       │
+│  └── Persistence: Không                                          │
+│                                                                     │
+│  Pinia:                                                          │
+│  ├── Phạm vi: Toàn app (shared)                                   │
+│  ├── SSR: ✅ Safe                                               │
+│  ├── Devtools: ✅ Full support (vue devtools)                    │
+│  ├── Persistence: ✅ Có plugins (@pinia-plugin-persistedstate)   │
+│  └── Logic: ✅ Actions, getters có logic phức tạp               │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -518,23 +603,30 @@ const products = useProductStore()
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    STATE MANAGEMENT CHEAT SHEET                          │
+│                    STATE MANAGEMENT CHEAT SHEET                      │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  ref() - Local State:                                            │
 │  ├── const count = ref(0)                                        │
 │  ├── Chỉ trong 1 component                                       │
-│  └── Dùng cho: form inputs, local toggles                         │
+│  ├── Dùng cho: form inputs, local toggles, temp states           │
+│  └── Auto-imported từ Vue                                        │
 │                                                                     │
 │  useState() - Shared State:                                       │
-│  ├── const theme = useState('theme', () => 'light')               │
+│  ├── const theme = useState('theme', () => 'light')             │
 │  ├── Chia sẻ giữa components                                     │
-│  └── Dùng cho: theme, sidebar, notifications                     │
+│  ├── SSR-safe (serialize/deserialize)                            │
+│  └── Dùng cho: theme, sidebar, notifications đơn giản          │
 │                                                                     │
 │  Pinia - Global Store:                                            │
 │  ├── export const useAuthStore = defineStore('auth', ...)         │
 │  ├── State + Getters + Actions                                   │
-│  └── Dùng cho: auth, cart, products                             │
+│  ├── SSR-safe, Devtools, Plugins                                 │
+│  └── Dùng cho: auth, cart, products, complex features           │
+│                                                                     │
+│  setup Pinia:                                                    │
+│  ├── npm install @pinia/nuxt pinia                              │
+│  └── modules: ['@pinia/nuxt'] trong nuxt.config.ts              │
 │                                                                     │
 │  storeToRefs():                                                   │
 │  ├── const { user } = storeToRefs(authStore)                     │

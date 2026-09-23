@@ -1,6 +1,6 @@
 # Data Fetching & SSR
 
-> **Mục tiêu:** Hiểu các cách fetch data trong Nuxt và cách SSR hoạt động.
+> **Mục tiêu:** Hiểu các cách fetch data trong Nuxt 4 và cách SSR hoạt động.
 
 ## Mục lục
 
@@ -15,35 +15,43 @@
 
 ## 1. SSR là gì?
 
-### Khái niệm
+### 1.1 Dùng để làm gì?
+
+**SSR = Server-Side Rendering - Render HTML trên server thay vì client.**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    SSR LÀ GÌ?                                            │
+│                    SSR vs SPA - SO SÁNH                              │
 ├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  SSR = Server-Side Rendering                                        │
 │                                                                     │
 │  SPA (Single Page Application):                                     │
 │  ├── Browser yêu cầu HTML trống                               │
-│  ├── Download JS                                                    │
-│  ├── JS render content                                             │
-│  └── → Chậm, SEO kém                                            │
+│  ├── Download JS bundle                                         │
+│  ├── JS render content (chờ...)                                │
+│  └── → Chậm hiển thị, SEO kém                               │
 │                                                                     │
 │  SSR (Server-Side Rendering):                                      │
-│  ├── Server render HTML với data                               │
+│  ├── Server gọi API, render HTML với data                     │
 │  ├── Browser nhận HTML đầy đủ                                 │
-│  ├── Hiển thị NGAY (không cần đợi JS)                      │
-│  └── → Nhanh, SEO tốt                                           │
+│  ├── Hiển thị NGAY LẬP TỨC (không cần đợi JS)            │
+│  └── → Nhanh, SEO tốt                                        │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Nuxt SSR Flow
+### 1.2 Có Sẵn Hay Cần Custom?
+
+**SSR LÀ TÍNH NĂNG CÓ SẴN CỦA NUXT 4!**
+
+- Nuxt tự động render trên server
+- `useFetch`, `useAsyncData` tự động chạy trên server
+- Hydration tự động trên client
+
+### 1.3 Cơ Chế Hoạt Động - Nuxt SSR Flow
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    NUXT SSR FLOW                                        │
+│                    NUXT SSR FLOW                                   │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  1. User request /blog/vue3                                       │
@@ -67,10 +75,22 @@
 
 ## 2. useFetch
 
-### 2.1 Cú pháp cơ bản
+### 2.1 Dùng để làm gì?
+
+**`useFetch` = Fetch data đơn giản, tự động chạy trên server (SSR-safe).**
+
+### 2.2 Có Sẵn Hay Cần Custom?
+
+**`useFetch` LÀ COMPOSABLE CÓ SẴN CỦA NUXT 4!**
+
+- Auto-imported
+- Tự động handle SSR
+- Caching tự động
+
+### 2.3 Cú Pháp Cơ Bản
 
 ```vue
-<script setup>
+<script setup lang="ts">
 // basic usage
 const { data, pending, error, refresh } = await useFetch('/api/posts')
 
@@ -97,10 +117,23 @@ const { data, pending, error, refresh } = await useFetch('/api/posts', {
 </template>
 ```
 
-### 2.2 Với Query Parameters
+### 2.4 Return Values
+
+```ts
+const {
+  data,       // Fetched data - ref()
+  pending,    // Loading state - boolean
+  error,      // Error object - Ref<Error | null>
+  refresh,    // Function để refetch
+  clear,      // Function để clear data
+  status,    // 'idle' | 'pending' | 'success' | 'error'
+} = await useFetch('/api/posts')
+```
+
+### 2.5 Với Query Parameters
 
 ```vue
-<script setup>
+<script setup lang="ts">
 const route = useRoute()
 
 // Tự động reactive - fetch lại khi query thay đổi
@@ -113,12 +146,12 @@ const { data } = await useFetch('/api/search', {
 </script>
 ```
 
-### 2.3 Với Transform
+### 2.6 Với Transform
 
 ```vue
-<script setup>
+<script setup lang="ts">
 const { data } = await useFetch('/api/users', {
-  transform: (users) => {
+  transform: (users: User[]) => {
     return users.map(user => ({
       ...user,
       fullName: `${user.firstName} ${user.lastName}`,
@@ -129,15 +162,15 @@ const { data } = await useFetch('/api/users', {
 </script>
 ```
 
-### 2.4 Lazy Fetching
+### 2.7 Lazy Fetching
 
 ```vue
-<script setup>
-// Lazy: Chỉ fetch khi component mount
+<script setup lang="ts">
+// Lazy: Chỉ fetch khi component mount (không block SSR)
 // Dùng cho user-interactive data (không cần SEO)
 const { data, pending } = await useLazyFetch('/api/comments')
 
-// Hoặc
+// Hoặc dùng option
 const { data, pending } = useFetch('/api/comments', {
   lazy: true
 })
@@ -148,53 +181,67 @@ const { data, pending } = useFetch('/api/comments', {
 
 ## 3. useAsyncData
 
-### 3.1 Khi nào dùng?
+### 3.1 Dùng để làm gì?
+
+**`useAsyncData` = Fetch data linh hoạt hơn `useFetch`, dùng cho logic phức tạp.**
+
+### 3.2 Có Sẵn Hay Cần Custom?
+
+**`useAsyncData` LÀ COMPOSABLE CÓ SẴN CỦA NUXT 4!**
+
+- Giống `useFetch` nhưng linh hoạt hơn
+- Cần tự gọi `$fetch` bên trong
+
+### 3.3 So Sánh useFetch vs useAsyncData
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    useAsyncData vs useFetch                            │
+│                    useAsyncData vs useFetch                          │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  useFetch:                                                        │
 │  ├── Đơn giản, nhanh                                             │
 │  ├── Tự động serialize params                                    │
 │  ├── Tốt cho simple GET requests                                │
+│  └── useFetch('/api/posts')                                      │
 │                                                                     │
 │  useAsyncData:                                                    │
 │  ├── Linh hoạt hơn                                               │
 │  ├── Gọi nhiều APIs trong 1 lần                               │
 │  ├── Custom logic trước/sau fetch                              │
 │  ├── Tốt cho complex data transformations                       │
+│  └── useAsyncData('key', () => $fetch('/api/posts'))            │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### 3.2 Cú pháp cơ bản
+### 3.4 Cú Pháp Cơ Bản
 
 ```vue
-<script setup>
+<script setup lang="ts">
 const { data, pending, error, refresh } = await useAsyncData(
-  'unique-key', // Cache key
+  'unique-key', // Cache key - PHẢI UNIQUE!
   () => $fetch('/api/posts')
 )
 </script>
 ```
 
-### 3.3 Gọi nhiều APIs
+### 3.5 Gọi Nhiều APIs
 
 ```vue
-<script setup>
-const { data: userData, pending: userPending } = await useAsyncData(
+<script setup lang="ts">
+// Gọi tuần tự
+const { data: userData } = await useAsyncData(
   'user',
   () => $fetch('/api/user')
 )
 
-const { data: postsData, pending: postsPending } = await useAsyncData(
+const { data: postsData } = await useAsyncData(
   'posts',
   () => $fetch('/api/posts')
 )
 
-// Hoặc gọi song song
+// Hoặc gọi song song với Promise.all
 const [{ data: user }, { data: posts }] = await Promise.all([
   useAsyncData('user', () => $fetch('/api/user')),
   useAsyncData('posts', () => $fetch('/api/posts'))
@@ -202,10 +249,10 @@ const [{ data: user }, { data: posts }] = await Promise.all([
 </script>
 ```
 
-### 3.4 Với Complex Logic
+### 3.6 Với Complex Logic
 
 ```vue
-<script setup>
+<script setup lang="ts">
 const { data: post } = await useAsyncData(
   'post',
   async () => {
@@ -234,11 +281,13 @@ const { data: post } = await useAsyncData(
 
 ## 4. $fetch
 
-### 4.1 Khi nào dùng?
+### 4.1 Dùng để làm gì?
+
+**`$fetch` = HTTP client dùng TRONG handlers, actions, composables (không phải setup).**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    $FETCH DÙNG KHI NÀO?                               │
+│                    $FETCH DÙNG KHI NÀO?                             │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  Dùng $fetch khi:                                                 │
@@ -248,15 +297,23 @@ const { data: post } = await useAsyncData(
 │  ├── Trong actions (Pinia store actions)                        │
 │  └── Trong server routes                                          │
 │                                                                     │
-│  KHÔNG DÙNG useFetch trong những trường hợp trên!            │
+│  ❌ KHÔNG DÙNG useFetch trong những trường hợp trên!            │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### 4.2 Trong Event Handlers
+### 4.2 Có Sẵn Hay Cần Custom?
+
+**`$fetch` LÀ UTILITY CÓ SẴN CỦA NUXT 4!**
+
+- Auto-imported
+- Dùng Ofetch (enhanced fetch)
+- Hỗ trợ SSR tự động
+
+### 4.3 Trong Event Handlers
 
 ```vue
-<script setup>
+<script setup lang="ts">
 async function handleSubmit() {
   // Gửi form
   const result = await $fetch('/api/contact', {
@@ -273,29 +330,28 @@ async function handleSubmit() {
   }
 }
 
-async function deletePost(id) {
+async function deletePost(id: number) {
   await $fetch(`/api/posts/${id}`, {
     method: 'DELETE'
   })
   // Refresh data
-  refresh()
+  refreshNuxtData()
 }
 </script>
 ```
 
-### 4.3 Trong Composable
+### 4.4 Trong Composable
 
-```vue
-<script setup>
-// composables/usePost.ts
-export const usePost = (slug) => {
-  const post = ref(null)
+```ts
+// app/composables/usePost.ts
+export const usePost = (slug: string) => {
+  const post = ref<Post | null>(null)
 
   async function fetchPost() {
     post.value = await $fetch(`/api/posts/${slug}`)
   }
 
-  async function updatePost(data) {
+  async function updatePost(data: Partial<Post>) {
     const updated = await $fetch(`/api/posts/${slug}`, {
       method: 'PUT',
       body: data
@@ -309,21 +365,20 @@ export const usePost = (slug) => {
     updatePost
   }
 }
-</script>
 ```
 
-### 4.4 Trong Pinia Actions
+### 4.5 Trong Pinia Actions
 
-```typescript
-// stores/posts.ts
+```ts
+// app/stores/posts.ts
 export const usePostStore = defineStore('posts', () => {
-  const posts = ref([])
+  const posts = ref<Post[]>([])
 
   async function fetchAll() {
     posts.value = await $fetch('/api/posts')
   }
 
-  async function create(data) {
+  async function create(data: CreatePostInput) {
     const newPost = await $fetch('/api/posts', {
       method: 'POST',
       body: data
@@ -331,7 +386,7 @@ export const usePostStore = defineStore('posts', () => {
     posts.value.unshift(newPost)
   }
 
-  async function remove(id) {
+  async function remove(id: number) {
     await $fetch(`/api/posts/${id}`, { method: 'DELETE' })
     posts.value = posts.value.filter(p => p.id !== id)
   }
@@ -344,11 +399,11 @@ export const usePostStore = defineStore('posts', () => {
 
 ## 5. Khi Nào Dùng Cái Nào?
 
-### Decision Tree
+### 5.1 Decision Tree
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    DATA FETCHING DECISION TREE                         │
+│                    DATA FETCHING DECISION TREE                     │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  Bạn đang fetch data cho PAGE?                                    │
@@ -371,22 +426,23 @@ export const usePostStore = defineStore('posts', () => {
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Examples
+### 5.2 Cases Thực Tế
 
 ```vue
 <!-- 1. Simple page data - useFetch -->
-<script setup>
+<script setup lang="ts">
+// GET request đơn giản
 const { data: posts } = await useFetch('/api/posts')
 </script>
 
 <!-- 2. Page data với params - useFetch -->
-<script setup>
+<script setup lang="ts">
 const route = useRoute()
 const { data: post } = await useFetch(`/api/posts/${route.params.slug}`)
 </script>
 
 <!-- 3. Complex page data - useAsyncData -->
-<script setup>
+<script setup lang="ts">
 const { data } = await useAsyncData('dashboard', async () => {
   const [user, stats, notifications] = await Promise.all([
     $fetch('/api/user'),
@@ -398,7 +454,7 @@ const { data } = await useAsyncData('dashboard', async () => {
 </script>
 
 <!-- 4. Form submit - $fetch -->
-<script setup>
+<script setup lang="ts">
 async function onSubmit() {
   await $fetch('/api/posts', {
     method: 'POST',
@@ -408,7 +464,7 @@ async function onSubmit() {
 </script>
 
 <!-- 5. On-demand refresh - $fetch trong action -->
-<script setup>
+<script setup lang="ts">
 const postStore = usePostStore()
 
 async function refresh() {
@@ -424,7 +480,7 @@ async function refresh() {
 ### 6.1 Client-Only Code
 
 ```vue
-<script setup>
+<script setup lang="ts">
 // Chạy trên cả server và client
 const data = ref('Hello')
 
@@ -443,10 +499,10 @@ if (import.meta.client) {
 </script>
 ```
 
-### 6.2 useCookie thay vì localStorage
+### 6.2 useCookie Thay vì localStorage
 
 ```vue
-<script setup>
+<script setup lang="ts">
 // ❌ localStorage không hoạt động trên server
 // Sẽ gây lỗi khi server render
 const token = localStorage.getItem('token')
@@ -468,7 +524,7 @@ token.value = null
 ### 6.3 Avoiding Window/Document Access on Server
 
 ```vue
-<script setup>
+<script setup lang="ts">
 // ❌ SAI - Gây lỗi khi SSR
 const width = window.innerWidth
 const isOnline = navigator.onLine
@@ -493,7 +549,7 @@ const deviceWidth = computed(() => {
 ### 6.4 Lazy Loading cho Heavy Data
 
 ```vue
-<script setup>
+<script setup lang="ts">
 // Non-lazy: Đợi data trước khi render page
 // User thấy loading state, tốt cho SEO
 const { data } = await useFetch('/api/heavy-data')
@@ -502,6 +558,40 @@ const { data } = await useFetch('/api/heavy-data')
 // User thấy page ngay, data load sau (với loading indicator)
 const { data, pending } = await useLazyFetch('/api/heavy-data')
 </script>
+```
+
+### 6.5 SSR vs CSR Comparison
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    SSR vs CLIENT-SIDE RENDERING                      │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  SSR (useFetch/useAsyncData):                                      │
+│  ├── ✅ SEO tốt - HTML có content ngay                         │
+│  ├── ✅ First paint nhanh                                        │
+│  ├── ✅ Tốt cho public pages (blog, product, landing)           │
+│  ├── ❌ Server load cao hơn                                     │
+│  └── ❌ Complex hydration có thể chậm                            │
+│                                                                     │
+│  CSR (useLazyFetch với onMounted):                                │
+│  ├── ✅ Server load thấp                                        │
+│  ├── ✅ Tốt cho dashboards, authenticated pages                  │
+│  ├── ❌ SEO kém - content load sau JS                          │
+│  └── ❌ First paint chậm hơn                                    │
+│                                                                     │
+│  KHI NÀO DÙNG SSR?                                               │
+│  ├── Public pages cần SEO                                        │
+│  ├── Landing pages, blog posts                                   │
+│  └── Product pages, category pages                               │
+│                                                                     │
+│  KHI NÀO DÙNG CSR?                                               │
+│  ├── Dashboards (cần auth)                                      │
+│  ├── User-specific content                                       │
+│  └── Real-time data (chat, notifications)                        │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -509,26 +599,30 @@ const { data, pending } = await useLazyFetch('/api/heavy-data')
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    DATA FETCHING CHEAT SHEET                            │
+│                    DATA FETCHING CHEAT SHEET                         │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  PAGE DATA (trong setup):                                         │
+│  PAGE DATA (trong setup - chạy trên server):                     │
 │  ├── useFetch('/api/...') → Simple GET requests                  │
-│  └── useAsyncData('key', () => ...) → Complex logic              │
+│  │   └── Return: data, pending, error, refresh                  │
+│  └── useAsyncData('key', () => ...) → Complex logic               │
+│      └── Return: data, pending, error, refresh                   │
 │                                                                     │
-│  ON-DEMAND (trong handlers):                                       │
-│  └── $fetch('/api/...') → Event handlers, actions                 │
+│  ON-DEMAND (trong handlers, actions):                             │
+│  └── $fetch('/api/...') → Event handlers, actions                  │
 │                                                                     │
 │  SSR SAFE:                                                         │
 │  ├── useCookie() → Thay localStorage                             │
 │  ├── onMounted() → Browser-only code                              │
-│  └── import.meta.client → Check environment                        │
+│  ├── import.meta.client → Check environment                        │
+│  └── import.meta.server → Check server environment                │
 │                                                                     │
-│  STATE:                                                            │
-│  ├── data → Fetched data                                        │
-│  ├── pending → Loading state                                      │
-│  ├── error → Error state                                        │
-│  └── refresh() → Refetch data                                    │
+│  LAZY LOADING:                                                    │
+│  ├── useLazyFetch('/api/...') → Không block SSR                  │
+│  └── useFetch('/api/...', { lazy: true }) → Tương tự             │
+│                                                                     │
+│  CACHING:                                                         │
+│  └── useAsyncData('unique-key', ...) → Key phải unique!          │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```

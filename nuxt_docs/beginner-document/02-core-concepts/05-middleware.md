@@ -1,6 +1,6 @@
 # Middleware & Auth Guards
 
-> **Mục tiêu:** Hiểu cách bảo vệ routes bằng middleware.
+> **Mục tiêu:** Hiểu cách bảo vệ routes bằng middleware trong Nuxt 4.
 
 ## Mục lục
 
@@ -14,11 +14,13 @@
 
 ## 1. Middleware là gì?
 
-### Khái niệm
+### 1.1 Dùng để làm gì?
+
+**Middleware = Code chạy TRƯỚC KHI page được render.**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    MIDDLEWARE LÀ GÌ?                                    │
+│                    MIDDLEWARE - GIẢI THÍCH ĐƠN GIẢN               │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  Middleware = Code chạy TRƯỚC KHI page được render              │
@@ -32,29 +34,64 @@
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### So sánh Vue Router Guards và Nuxt Middleware
+### 1.2 Có Sẵn Hay Cần Custom?
+
+**MIDDLEWARE LÀ TÍNH NĂNG CÓ SẴN CỦA NUXT 4!**
+
+- Tạo file trong `app/middleware/`
+- Dùng `defineNuxtRouteMiddleware()` để khai báo
+- Nuxt tự động chạy trước khi render page
+
+### 1.3 Cơ Chế Hoạt Động - Behind The Scenes
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    VUE ROUTER vs NUXT MIDDLEWARE                      │
+│                    MIDDLEWARE HOẠT ĐỘNG NHƯ THẾ NÀO?            │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  1. USER NAVIGATE                                                 │
+│     User click link hoặc navigateTo('/admin')                   │
+│                                                                     │
+│  2. MIDDLEWARE CHẠY TRƯỚC                                        │
+│     ├── Global middleware (auth.global.ts)                        │
+│     ├── Route middleware (auth.ts)                               │
+│     └── Inline middleware                                         │
+│                                                                     │
+│  3. KIỂM TRA CONDITION                                           │
+│     if (!isAuth) return navigateTo('/login')                   │
+│                                                                     │
+│  4. CHO phép HOẶC Redirect                                        │
+│     ├── Pass → Render page                                       │
+│     └── Redirect → Navigate đến trang khác                        │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 1.4 So Sánh Vue Router vs Nuxt Middleware
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    VUE ROUTER vs NUXT MIDDLEWARE                    │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  VUE ROUTER:                                                      │
 │  ───────────────                                                   │
-│  router.beforeEach((to, from, next) => {                         │
-│    if (to.meta.requiresAuth && !isAuth) {                         │
-│      next('/login')                                                │
-│    }                                                              │
-│  })                                                               │
+│  router.beforeEach((to, from, next) => {                        │
+│    if (to.meta.requiresAuth && !isAuth) {                        │
+│      next('/login')                                               │
+│    }                                                             │
+│  })                                                              │
 │                                                                     │
 │  NUXT MIDDLEWARE:                                                 │
 │  ─────────────────                                                │
-│  // middleware/auth.ts                                            │
-│  export default defineNuxtRouteMiddleware((to, from) => {        │
-│    if (to.meta.requiresAuth && !isAuth) {                         │
-│      return navigateTo('/login')                                   │
-│    }                                                              │
-│  })                                                               │
+│  // app/middleware/auth.ts                                       │
+│  export default defineNuxtRouteMiddleware((to, from) => {       │
+│    if (to.meta.requiresAuth && !isAuth) {                        │
+│      return navigateTo('/login')                                  │
+│    }                                                             │
+│  })                                                              │
+│                                                                     │
+│  → CÚ PHÁP KHÁC, NHƯNG CÙNG MỤC ĐÍCH!                         │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -75,7 +112,7 @@
 
 ### 2.2 Auth Middleware
 
-```typescript
+```ts
 // app/middleware/auth.ts
 export default defineNuxtRouteMiddleware((to, from) => {
   // Lấy user từ auth store
@@ -96,7 +133,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
 
 ### 2.3 Admin Middleware
 
-```typescript
+```ts
 // app/middleware/admin.ts
 export default defineNuxtRouteMiddleware((to, from) => {
   const user = useUserStore()
@@ -113,11 +150,11 @@ export default defineNuxtRouteMiddleware((to, from) => {
 
 ## 3. Sử Dụng Middleware
 
-### 3.1 Trong Page
+### 3.1 Dùng definePageMeta
 
 ```vue
 <!-- app/pages/dashboard.vue -->
-<script setup>
+<script setup lang="ts">
 // Áp dụng middleware cho page này
 definePageMeta({
   middleware: 'auth'
@@ -136,8 +173,8 @@ definePageMeta({
 
 ```vue
 <!-- app/pages/admin/settings.vue -->
-<script setup>
-// Áp dụng nhiều middleware
+<script setup lang="ts">
+// Áp dụng nhiều middleware - chạy theo thứ tự
 definePageMeta({
   middleware: ['auth', 'admin']
 })
@@ -154,8 +191,8 @@ definePageMeta({
 
 ```vue
 <!-- app/pages/special-page.vue -->
-<script setup>
-// Inline middleware - không cần tạo file
+<script setup lang="ts">
+// Inline middleware - không cần tạo file riêng
 definePageMeta({
   middleware: (to, from) => {
     const isVIP = useVIPStore()
@@ -170,8 +207,9 @@ definePageMeta({
 
 ### 3.4 Route Meta
 
-```typescript
-// Định nghĩa meta type
+```ts
+// Định nghĩa meta type cho TypeScript
+// app/middleware/types.ts
 declare module '#app' {
   interface PageMeta {
     requiresAuth?: boolean
@@ -182,8 +220,7 @@ declare module '#app' {
 
 ```vue
 <!-- Sử dụng meta để kiểm tra -->
-<script setup>
-// Kiểm tra meta trong middleware
+<script setup lang="ts">
 definePageMeta({
   requiresAuth: true,
   requiresAdmin: true
@@ -191,19 +228,19 @@ definePageMeta({
 </script>
 ```
 
-```typescript
+```ts
 // Middleware kiểm tra meta
 // app/middleware/auth.ts
 export default defineNuxtRouteMiddleware((to, from) => {
+  const user = useUserStore()
+
   if (to.meta.requiresAuth) {
-    const user = useUserStore()
     if (!user.isLoggedIn) {
       return navigateTo('/login')
     }
   }
 
   if (to.meta.requiresAdmin) {
-    const user = useUserStore()
     if (!user.isAdmin) {
       return navigateTo('/')
     }
@@ -217,7 +254,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
 
 ### 4.1 Auth Store
 
-```typescript
+```ts
 // app/stores/auth.ts
 export const useAuthStore = defineStore('auth', () => {
   // State
@@ -276,10 +313,10 @@ export const useAuthStore = defineStore('auth', () => {
 })
 ```
 
-### 4.2 Auth Middleware
+### 4.2 Auth Middleware Hoàn Chỉnh
 
-```typescript
-// app/middleware/auth.ts
+```ts
+// app/middleware/auth.global.ts
 export default defineNuxtRouteMiddleware((to, from) => {
   const authStore = useAuthStore()
 
@@ -298,57 +335,95 @@ export default defineNuxtRouteMiddleware((to, from) => {
 })
 ```
 
-### 4.3 Sử dụng trong Layout
+### 4.3 Auth Pages
 
 ```vue
-<!-- app/layouts/default.vue -->
-<script setup>
-const authStore = useAuthStore()
-const route = useRoute()
-
-// Fetch user khi app mount
-onMounted(async () => {
-  await authStore.fetchUser()
+<!-- app/pages/login.vue -->
+<script setup lang="ts">
+definePageMeta({
+  layout: 'auth'
 })
 
-const navItems = computed(() => {
-  if (authStore.isLoggedIn) {
-    return [
-      { label: 'Trang chủ', to: '/' },
-      { label: 'Dashboard', to: '/dashboard' },
-      { label: 'Profile', to: '/profile' },
-      { label: 'Logout', action: 'logout' }
-    ]
-  }
-
-  return [
-    { label: 'Trang chủ', to: '/' },
-    { label: 'Login', to: '/login' }
-  ]
+const form = reactive({
+  email: '',
+  password: ''
 })
 
-function handleNavClick(item) {
-  if (item.action === 'logout') {
-    authStore.logout()
+async function handleLogin() {
+  const result = await useAuthStore().login(form.email, form.password)
+  if (result.success) {
+    navigateTo('/dashboard')
   }
 }
 </script>
+
+<template>
+  <form @submit.prevent="handleLogin">
+    <input v-model="form.email" type="email" placeholder="Email" />
+    <input v-model="form.password" type="password" placeholder="Password" />
+    <button type="submit">Login</button>
+  </form>
+</template>
+```
+
+### 4.4 Protected Page
+
+```vue
+<!-- app/pages/dashboard.vue -->
+<script setup lang="ts">
+definePageMeta({
+  middleware: 'auth'
+})
+
+const authStore = useAuthStore()
+</script>
+
+<template>
+  <div>
+    <h1>Dashboard</h1>
+    <p>Chào mừng, {{ authStore.user?.name }}!</p>
+  </div>
+</template>
 ```
 
 ---
 
 ## 5. Global Middleware
 
-### 5.1 Tạo Global Middleware
+### 5.1 Dùng để làm gì?
 
-```typescript
+**Global middleware chạy trên MỌI route - dùng cho auth check toàn app.**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    GLOBAL vs NAMED MIDDLEWARE                        │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  NAMED MIDDLEWARE:                                                │
+│  ├── File: app/middleware/auth.ts                                │
+│  ├── Chỉ chạy khi page khai báo: definePageMeta({ middleware: 'auth' }) │
+│  └── Ví dụ: Auth check cho dashboard                              │
+│                                                                     │
+│  GLOBAL MIDDLEWARE:                                                │
+│  ├── File: app/middleware/auth.global.ts                          │
+│  ├── Chạy TRƯỚC MỌI route                                        │
+│  └── Ví dụ: Auth check toàn app, analytics, locale              │
+│                                                                     │
+│  ⚠️ .global.ts suffix = Global middleware!                       │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 5.2 Tạo Global Middleware
+
+```ts
 // app/middleware/auth.global.ts
 // .global.ts suffix = chạy trên MỌI route
 export default defineNuxtRouteMiddleware((to, from) => {
   const authStore = useAuthStore()
 
   // Public routes
-  const publicRoutes = ['/login', '/register']
+  const publicRoutes = ['/login', '/register', '/forgot-password']
 
   if (!publicRoutes.includes(to.path)) {
     if (!authStore.isLoggedIn) {
@@ -358,16 +433,16 @@ export default defineNuxtRouteMiddleware((to, from) => {
 })
 ```
 
-### 5.2 Multiple Global Middleware
+### 5.3 Multiple Global Middleware
 
 ```
 📁 app/middleware/
-├── 📄 auth.global.ts     ← Chạy đầu tiên
-├── 📄 analytics.global.ts ← Chạy thứ hai
-└── 📄 locale.global.ts  ← Chạy thứ ba
+├── 📄 auth.global.ts       ← Chạy đầu tiên
+├── 📄 analytics.global.ts  ← Chạy thứ hai
+└── 📄 locale.global.ts    ← Chạy thứ ba
 ```
 
-```typescript
+```ts
 // app/middleware/analytics.global.ts
 export default defineNuxtRouteMiddleware((to, from) => {
   // Log page views
@@ -380,29 +455,49 @@ export default defineNuxtRouteMiddleware((to, from) => {
 })
 ```
 
+```ts
+// app/middleware/locale.global.ts
+export default defineNuxtRouteMiddleware((to, from) => {
+  // Check URL locale
+  const locale = to.params.lang as string
+
+  if (!locale) {
+    // Redirect to default locale
+    return navigateTo('/vi')
+  }
+})
+```
+
 ---
 
 ## 🎯 Tóm Tắt
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    MIDDLEWARE CHEAT SHEET                                 │
+│                    MIDDLEWARE CHEAT SHEET                            │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  TẠO MIDDLEWARE:                                                 │
-│  ├── File: app/middleware/auth.ts                                │
-│  └── export default defineNuxtRouteMiddleware((to, from) => {})  │
+│  ├── Named: app/middleware/auth.ts                               │
+│  │   └── export default defineNuxtRouteMiddleware((to, from) => {}) │
+│  └── Global: app/middleware/auth.global.ts                        │
+│      └── Thêm .global.ts suffix                                   │
 │                                                                     │
 │  DÙNG TRONG PAGE:                                                │
-│  ├── definePageMeta({ middleware: 'auth' })                     │
-│  ├── definePageMeta({ middleware: ['auth', 'admin'] })          │
-│  └── Inline: definePageMeta({ middleware: (to, from) => {} })  │
-│                                                                     │
-│  GLOBAL MIDDLEWARE:                                               │
-│  └── File: app/middleware/auth.global.ts (suffix .global.ts)     │
+│  ├── Single: definePageMeta({ middleware: 'auth' })               │
+│  ├── Multiple: definePageMeta({ middleware: ['auth', 'admin'] }) │
+│  └── Inline: definePageMeta({ middleware: (to, from) => {} })    │
 │                                                                     │
 │  REDIRECT:                                                        │
 │  └── return navigateTo('/login')                                 │
+│                                                                     │
+│  ROUTE META:                                                     │
+│  ├── Khai báo: declare module '#app' { interface PageMeta {...} }│
+│  └── Sử dụng: definePageMeta({ requiresAuth: true })             │
+│                                                                     │
+│  THỨ TỰ CHẠY:                                                    │
+│  ├── Global middleware → Route middleware → Inline middleware       │
+│  └── Nếu có redirect → dừng lại, không chạy tiếp                │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```

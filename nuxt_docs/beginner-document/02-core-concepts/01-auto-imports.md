@@ -1,6 +1,6 @@
 # Auto-Imports & Script Setup
 
-> **Mục tiêu:** Hiểu cách Nuxt tự động import code và cách sử dụng `<script setup>`.
+> **Mục tiêu:** Hiểu cách Nuxt tự động import code và cách sử dụng `<script setup>` trong Nuxt 4.
 
 ## Mục lục
 
@@ -14,16 +14,18 @@
 
 ## 1. Auto-Imports Là Gì?
 
-### So sánh Vue thuần và Nuxt
+### 1.1 Dùng để làm gì?
+
+**Auto-Imports giúp bạn KHÔNG CẦN viết `import` thủ công!**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    AUTO-IMPORTS                                            │
+│                    SO SÁNH: MANUAL vs AUTO-IMPORTS                   │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  VUE THUẦN (Manual imports):                                      │
-│  ─────────────────────────────                                     │
-│  <script>                                                          │
+│  ─────────────────────────────                                      │
+│  <script setup>                                                    │
 │    import { ref, computed } from 'vue'                          │
 │    import MyComponent from './MyComponent.vue'                     │
 │    import { useAuth } from '@/composables/useAuth'                │
@@ -32,9 +34,9 @@
 │  </script>                                                        │
 │                                                                     │
 │  NUXT (Auto-imports):                                            │
-│  ──────────────────────────────                                    │
-│  <script setup>                                                   │
-│    // Không cần import!                                          │
+│  ──────────────────────────────                                     │
+│  <script setup lang="ts">                                         │
+│    // Không cần import!                                           │
 │    const count = ref(0)          // ✅ Tự động có              │
 │    <MyComponent />              // ✅ Tự động có              │
 │    const auth = useAuth()       // ✅ Tự động có              │
@@ -43,14 +45,48 @@
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Tại sao Auto-Imports quan trọng?
+### 1.2 Có Sẵn Hay Cần Custom?
+
+**ĐÂY LÀ TÍNH NĂNG CÓ SẴN CỦA NUXT 4!**
+
+- Nuxt tự động scan và import:
+  - Vue APIs (`ref`, `computed`, `watch`, etc.)
+  - Nuxt composables (`useRoute`, `useFetch`, etc.)
+  - Components trong `app/components/`
+  - Functions trong `app/utils/`
+  - Composables trong `app/composables/`
+
+### 1.3 Cơ Chế Hoạt Động - Behind The Scenes
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    NUXT AUTO-IMPORT HOẠT ĐỘNG NHƯ THẾ NÀO?        │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  1. NUXT SCAN DIRECTORIES                                        │
+│     ├── app/components/  → Scan components                        │
+│     ├── app/composables/ → Scan composables                        │
+│     └── app/utils/      → Scan utilities                          │
+│                                                                     │
+│  2. NUXT GENERATE IMPORTS                                        │
+│     Tạo file auto-imports:                                        │
+│     └── .nuxt/auto-imports.d.ts                                   │
+│                                                                     │
+│  3. VITE BUNDLE                                                  │
+│     Khi build, Vite resolve imports từ đây                      │
+│     Không cần import thủ công!                                    │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 1.4 Lợi Ích
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    LỢI ÍCH CỦA AUTO-IMPORTS                           │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  ✅ Code NGẮN HƠN                                                │
+│  ✅ CODE NGẮN HƠN                                                │
 │     Không cần viết import statements dài dòng                    │
 │                                                                     │
 │  ✅ ÍT LỖI HƠN                                                   │
@@ -80,23 +116,29 @@
 │  ├── ref(), reactive(), computed()                               │
 │  ├── watch(), watchEffect()                                      │
 │  ├── toRef(), toRefs(), isRef()                                  │
-│  └── shallowRef(), triggerRef()                                  │
+│  ├── shallowRef(), triggerRef(), customRef()                    │
+│  ├── readonly(), shallowReactive(), shallowReadonly()           │
+│  └── markRaw(), toRaw()                                          │
 │                                                                     │
 │  LIFECYCLE HOOKS:                                                │
 │  ├── onMounted(), onUnmounted()                                 │
 │  ├── onBeforeMount(), onBeforeUnmount()                         │
 │  ├── onUpdated(), onBeforeUpdate()                              │
+│  ├── onActivated(), onDeactivated()                             │
 │  └── onErrorCaptured()                                          │
 │                                                                     │
 │  COMPONENT UTILITIES:                                             │
 │  ├── defineProps(), defineEmits()                               │
 │  ├── defineExpose(), defineModel()                              │
-│  └── useSlots(), useAttrs()                                     │
+│  ├── defineSlots()                                              │
+│  ├── useSlots(), useAttrs()                                     │
+│  └── useTemplateRef()                                           │
 │                                                                     │
 │  OTHER:                                                           │
 │  ├── h() (createElement)                                        │
 │  ├── nextTick()                                                  │
-│  └── useCssModules()                                            │
+│  ├── useTransition()                                            │
+│  └── useId()                                                    │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -128,11 +170,17 @@
 │  META:                                                             │
 │  ├── useHead()        → Set head tags                          │
 │  ├── useSeoMeta()     → SEO meta tags                         │
-│  └── useNuxtApp()     → Access nuxt app instance              │
+│  ├── useNuxtApp()     → Access nuxt app instance              │
+│  └── useRuntimeConfig() → Runtime config                       │
 │                                                                     │
 │  ERROR:                                                           │
 │  ├── createError()    → Throw error                           │
+│  ├── showError()      → Show error page                       │
 │  └── clearError()     → Clear error                           │
+│                                                                     │
+│  PAGE:                                                            │
+│  ├── definePageMeta() → Page metadata                          │
+│  └── usePageMeta()    → Page metadata reactive                │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -144,11 +192,13 @@
 │                    COMPONENTS ĐƯỢC AUTO-IMPORT                        │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  BUILT-IN:                                                        │
+│  BUILT-IN (Nuxt cung cấp sẵn):                                │
 │  ├── <NuxtPage />       → Render current page                   │
 │  ├── <NuxtLink />       → Smart link with prefetching           │
 │  ├── <NuxtLayout />     → Layout wrapper                        │
 │  ├── <NuxtRouteAnnouncer /> → Accessibility                     │
+│  ├── <NuxtLoadingIndicator /> → Loading indicator              │
+│  ├── <NuxtApp />        → App wrapper (advanced)              │
 │  └── <NuxtWelcome />    → Default welcome page                 │
 │                                                                     │
 │  CUSTOM (trong app/components/):                                 │
@@ -156,6 +206,10 @@
 │  ├── Footer.vue → <Footer />                                    │
 │  ├── ui/Button.vue → <UiButton />                               │
 │  └── base/Card.vue → <BaseCard />                               │
+│                                                                     │
+│  LAZY (prefix "Lazy"):                                           │
+│  ├── <LazyModal />    → Tải khi cần                           │
+│  └── <LazyChart />    → Tải khi cần                           │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -172,7 +226,11 @@
 │  Ví dụ:                                                          │
 │  ├── app/utils/formatDate.ts → formatDate()                    │
 │  ├── app/utils/validateEmail.ts → validateEmail()              │
-│  └── app/utils/constants.ts → CONSTANTS                          │
+│  └── app/utils/constants.ts → APP_NAME, CONFIG                    │
+│                                                                     │
+│  ⚠️ LƯU Ý:                                                     │
+│  └── Composables phải có prefix "use"                           │
+│  └── Stores phải có suffix "Store"                             │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -181,11 +239,13 @@
 
 ## 3. Script Setup Là Gì?
 
-### 3.1 `<script setup>` vs `<script>`
+### 3.1 Dùng để làm gì?
+
+`<script setup>` là syntax đặc biệt của Vue 3 giúp viết component ngắn gọn hơn.
 
 ```vue
 <!-- ❌ CÁCH CŨ: <script> thông thường -->
-<script>
+<script setup lang="ts">
 import { ref } from 'vue'
 
 export default {
@@ -209,7 +269,7 @@ export default {
 
 ```vue
 <!-- ✅ CÁCH MỚI: <script setup> - KHÔNG cần import Vue APIs! -->
-<script setup>
+<script setup lang="ts">
 // ref, computed, onMounted... đều được auto-import!
 const count = ref(0)
 
@@ -217,7 +277,7 @@ function increment() {
   count.value++
 }
 
-// KHÔNG CẦN return!
+// KHÔNG CẦN return! - Tự động expose cho template
 </script>
 
 <template>
@@ -225,48 +285,56 @@ function increment() {
 </template>
 ```
 
-### 3.2 Lợi ích của `<script setup>`
+### 3.2 Có Sẵn Hay Cần Custom?
+
+**ĐÂY LÀ TÍNH NĂNG CÓ SẴN CỦA VUE 3 + NUXT 4!**
+
+- `<script setup>` là compiler-level syntax
+- Không cần config gì thêm
+- TypeScript được hỗ trợ ngay
+
+### 3.3 Cơ Chế Hoạt Động - Behind The Scenes
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    LỢI ÍCH CỦA <script setup>                          │
+│                    <script setup> HOẠT ĐỘNG NHƯ THẾ NÀO?          │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  1. CODE NGẮN HƠN                                                 │
-│     Không cần return object                                        │
+│  1. VUE COMPILER CHUYỂN ĐỔI                                     │
+│     <script setup>                                                │
+│     → Chuyển thành setup() function                             │
 │                                                                     │
-│  2. PROPS VÀ EMITS ĐƠN GIẢN HƠN                                  │
-│     defineProps() và defineEmits() là compiler macros             │
+│  2. AUTO RETURN                                                  │
+│     Tất cả top-level variables tự động expose cho template     │
 │                                                                     │
-│  3. TYPE SCRIPT TỐT HƠN                                          │
-│     Type inference tự động                                        │
+│  3. COMPILE-TIME MACROS                                           │
+│     defineProps() → Props declaration                             │
+│     defineEmits() → Emits declaration                            │
+│     defineExpose() → Exposed properties                           │
 │                                                                     │
-│  4. PERFORMANCE TỐT HƠN                                           │
-│     Code chạy như setup() function, hiệu quả hơn                 │
-│                                                                     │
-│  5. ĐƯỢC KHUYẾN NGHỊ TRONG NUXT                                 │
-│     Nuxt sử dụng <script setup> làm mặc định                    │
+│  4. PERFORMANCE TỐT HƠN                                         │
+│     Code chạy như setup() function, hiệu quả hơn               │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### 3.3 Ví dụ đầy đủ với Props và Emits
+### 3.4 Ví dụ đầy đủ với TypeScript
 
 ```vue
-<!-- UserCard.vue -->
+<!-- app/components/UserCard.vue -->
 <script setup lang="ts">
-// Props với TypeScript
+// Props - TypeScript generic
 const props = defineProps<{
   name: string
   email: string
   avatar?: string
-  role?: 'admin' | 'user' | 'guest'
+  role: 'admin' | 'user' | 'guest'
 }>()
 
-// Emits
+// Emits - TypeScript generic
 const emit = defineEmits<{
   click: [event: MouseEvent]
-  edit: [id: string]
+  edit: [userId: string]
 }>()
 
 // Reactive state
@@ -293,21 +361,23 @@ function handleClick() {
 function handleEdit() {
   emit('edit', props.email)
 }
+
+// KHÔNG CẦN RETURN! - Tự động expose cho template
 </script>
 
 <template>
   <div class="user-card" :class="{ expanded: isExpanded }">
     <img
-      :src="avatar || `https://ui-avatars.com/api/?name=${name}`"
-      :alt="name"
+      :src="props.avatar || `https://ui-avatars.com/api/?name=${props.name}`"
+      :alt="props.name"
       class="avatar"
     />
 
     <div class="info">
-      <h3>{{ name }}</h3>
-      <p>{{ email }}</p>
-      <span v-if="role" :class="['badge', `badge-${role}`]">
-        {{ role }}
+      <h3>{{ props.name }}</h3>
+      <p>{{ props.email }}</p>
+      <span :class="['badge', `badge-${props.role}`]">
+        {{ props.role }}
       </span>
     </div>
 
@@ -319,25 +389,18 @@ function handleEdit() {
 </template>
 ```
 
-### 3.4 Props với Default Values
+### 3.5 Props với Default Values
 
-```vue
-<script setup>
-// Cách 1: Dùng withDefaults
+```ts
+<script setup lang="ts">
+// Cách 1: withDefaults (Khuyến nghị)
 const props = withDefaults(defineProps<{
   title: string
   count?: number
   items?: string[]
 }>(), {
   count: 0,
-  items: () => []
-})
-
-// Cách 2: Dùng defineProps với defaults
-const props = defineProps({
-  title: { type: String, required: true },
-  count: { type: Number, default: 0 },
-  items: { type: Array, default: () => [] }
+  items: () => []  // Array/Object phải dùng factory function
 })
 </script>
 ```
@@ -348,7 +411,9 @@ const props = defineProps({
 
 ### 4.1 Tạo Composable
 
-```typescript
+**Quy tắc: File phải có prefix "use" để được auto-import!**
+
+```ts
 // app/composables/useCounter.ts
 export const useCounter = (initialValue = 0) => {
   const count = ref(initialValue)
@@ -376,14 +441,14 @@ export const useCounter = (initialValue = 0) => {
 
 ```vue
 <!-- Sử dụng - KHÔNG cần import! -->
-<script setup>
+<script setup lang="ts">
 const { count, increment, decrement } = useCounter(10)
 </script>
 ```
 
 ### 4.2 Tạo Utility Function
 
-```typescript
+```ts
 // app/utils/formatDate.ts
 export const formatDate = (date: Date | string, locale = 'vi-VN') => {
   const d = typeof date === 'string' ? new Date(date) : date
@@ -408,7 +473,7 @@ export const formatNumber = (num: number) => {
 
 ```vue
 <!-- Sử dụng - KHÔNG cần import! -->
-<script setup>
+<script setup lang="ts">
 const date = '2024-01-15'
 const price = 150000
 
@@ -421,7 +486,7 @@ console.log(formatNumber(1000000))  // "1.000.000"
 
 ### 4.3 Tạo Constants
 
-```typescript
+```ts
 // app/utils/constants.ts
 export const APP_NAME = 'BlogTalk'
 export const APP_VERSION = '1.0.0'
@@ -445,10 +510,38 @@ export const HTTP_STATUS = {
 
 ```vue
 <!-- Sử dụng -->
-<script setup>
+<script setup lang="ts">
 console.log(APP_NAME)        // "BlogTalk"
 console.log(ROUTES.HOME)    // "/"
 console.log(HTTP_STATUS.OK)  // 200
+</script>
+```
+
+### 4.4 Tạo Store
+
+**Quy tắc: Function phải có suffix "Store" để được auto-import!**
+
+```ts
+// app/stores/auth.ts
+export const useAuthStore = defineStore('auth', () => {
+  const user = ref<User | null>(null)
+  const token = useCookie('auth_token')
+
+  const isLoggedIn = computed(() => !!token.value && !!user.value)
+
+  async function login(email: string, password: string) {
+    // ... login logic
+  }
+
+  return { user, token, isLoggedIn, login }
+})
+```
+
+```vue
+<!-- Sử dụng - KHÔNG cần import! -->
+<script setup lang="ts">
+const auth = useAuthStore()
+console.log(auth.isLoggedIn)
 </script>
 ```
 
@@ -456,32 +549,25 @@ console.log(HTTP_STATUS.OK)  // 200
 
 ## 5. Common Mistakes
 
-### ❌ Sai: Quên auto-import hoạt động như thế nào
+### ❌ Sai: Import Vue APIs trong Nuxt
 
 ```vue
 <!-- ❌ SAI - Không cần import Vue APIs trong Nuxt -->
-<script setup>
-// import { ref } from 'vue'  // ❌ Không cần thiết!
+<script setup lang="ts">
+import { ref } from 'vue'  // ❌ Không cần!
 </script>
 ```
 
 ```vue
-<!-- ✅ ĐÚNG - Vue APIs và composables đều được auto-import -->
-<script setup>
-// Vue APIs - KHÔNG cần import!
-const count = ref(0)
-
-// Composable trong app/composables/ - KHÔNG cần import!
-const auth = useAuth()  // ✅ Tự động có
-
-// Utils trong app/utils/ - KHÔNG cần import!
-const date = formatDate(new Date())  // ✅ Tự động có
+<!-- ✅ ĐÚNG - Vue APIs được auto-import -->
+<script setup lang="ts">
+const count = ref(0)  // ✅ Tự động có
 </script>
 ```
 
 ### ❌ Sai: Composable không có prefix "use"
 
-```typescript
+```ts
 // ❌ SAI - Không auto-import được
 // app/composables/auth.ts
 export const auth = () => {
@@ -489,7 +575,7 @@ export const auth = () => {
 }
 ```
 
-```typescript
+```ts
 // ✅ ĐÚNG - Phải có prefix "use"
 // app/composables/useAuth.ts
 export const useAuth = () => {
@@ -499,7 +585,7 @@ export const useAuth = () => {
 
 ### ❌ Sai: Store không có suffix "Store"
 
-```typescript
+```ts
 // ❌ SAI - Không auto-import được
 // app/stores/auth.ts
 export const useAuth = defineStore('auth', () => {
@@ -507,7 +593,7 @@ export const useAuth = defineStore('auth', () => {
 })
 ```
 
-```typescript
+```ts
 // ✅ ĐÚNG - Phải có suffix "Store"
 // app/stores/auth.ts
 export const useAuthStore = defineStore('auth', () => {
@@ -519,16 +605,16 @@ export const useAuthStore = defineStore('auth', () => {
 
 ```vue
 <!-- ❌ SAI -->
-<script setup>
-import { formatDate } from '@/utils/formatDate'
+<script setup lang="ts">
+import { formatDate } from '@/utils/formatDate'  // ❌ Không cần!
 </script>
 ```
 
 ```vue
 <!-- ✅ ĐÚNG - KHÔNG cần import! -->
-<script setup>
+<script setup lang="ts">
 // Tự động có từ app/utils/formatDate.ts
-const date = formatDate(new Date())
+const date = formatDate(new Date())  // ✅ Tự động có
 </script>
 ```
 
@@ -538,16 +624,16 @@ const date = formatDate(new Date())
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    AUTO-IMPORTS CHEAT SHEET                            │
+│                    AUTO-IMPORTS CHEAT SHEET                           │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  ✅ ĐƯỢC AUTO-IMPORT TỰ ĐỘNG:                                    │
-│  ────────────────────────────────────────────────────────          │
+│  ────────────────────────────────────────────────────────           │
 │  • Vue APIs: ref, computed, watch, onMounted, etc.                 │
 │  • Nuxt composables: useRoute, useFetch, useState, etc.            │
 │  • Components trong app/components/                                │
 │  • Functions trong app/utils/                                      │
-│  • Composables trong app/composables/ (phải có prefix "use")       │
+│  • Composables trong app/composables/ (phải có prefix "use")      │
 │  • Stores trong app/stores/ (phải có suffix "Store")              │
 │                                                                     │
 │  ❌ CẦN IMPORT THỦ CÔNG:                                         │
@@ -556,11 +642,18 @@ const date = formatDate(new Date())
 │  • Hàm từ thư viện bên ngoài                                      │
 │                                                                     │
 │  📁 CẤU TRÚC:                                                     │
-│  ────────────────────────────────────────────────────────          │
+│  ────────────────────────────────────────────────────────           │
 │  app/composables/useAuth.ts  → useAuth()                           │
 │  app/utils/formatDate.ts     → formatDate()                        │
 │  app/components/Header.vue   → <Header />                          │
 │  app/stores/auth.ts         → useAuthStore()                       │
+│                                                                     │
+│  <script setup>:                                                   │
+│  ────────────────────────────────────────────────────────           │
+│  • Không cần return - tự động expose cho template                 │
+│  • defineProps<{...}>() - khai báo props                           │
+│  • defineEmits<{...}>() - khai báo emits                          │
+│  • withDefaults(defineProps<{...}>(), {}) - default values         │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```

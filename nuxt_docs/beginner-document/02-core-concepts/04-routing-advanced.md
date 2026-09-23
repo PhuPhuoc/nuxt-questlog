@@ -1,6 +1,6 @@
 # Nested Routes & Layouts
 
-> **Mục tiêu:** Hiểu cách tổ chức app với layouts và nested routes.
+> **Mục tiêu:** Hiểu cách tổ chức app với layouts và nested routes trong Nuxt 4.
 
 ## Mục lục
 
@@ -14,34 +14,44 @@
 
 ## 1. Layouts Là Gì?
 
-### Khái niệm
+### 1.1 Dùng để làm gì?
+
+**Layout = "Khuôn mẫu" chung cho nhiều pages.**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    LAYOUTS LÀ GÌ?                                       │
+│                    LAYOUTS - GIẢI THÍCH ĐƠN GIẢN                 │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  Layout = "Khuôn mẫu" chung cho nhiều pages                      │
+│  Layout = Template chung cho nhiều pages                          │
 │                                                                     │
 │  Ví dụ:                                                            │
 │  ├── Default Layout   → Header, Footer, Sidebar                    │
-│  ├── Admin Layout    → Admin Header, Sidebar                       │
-│  ├── Auth Layout     → Logo, Không có nav (login/register)        │
-│  └── Blog Layout     → Blog-specific header                        │
+│  ├── Admin Layout   → Admin Header, Sidebar                       │
+│  ├── Auth Layout   → Logo, Không có nav (login/register)          │
+│  └── Blog Layout   → Blog-specific header                          │
 │                                                                     │
 │  LỢI ÍCH:                                                         │
-│  ├── Code lặp lại giữa pages                                    │
+│  ├── Code lặp lại giữa pages KHÔNG LẶP LẠI                    │
 │  ├── Dễ thay đổi layout chung                                   │
 │  └── Tổ chức code tốt hơn                                      │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### So sánh có/không có Layouts
+### 1.2 Có Sẵn Hay Cần Custom?
+
+**LAYOUTS LÀ TÍNH NĂNG CÓ SẴN CỦA NUXT 4!**
+
+- Tạo file trong `app/layouts/`
+- Nuxt tự động nhận diện
+- Dùng `<slot />` để render page content
+
+### 1.3 So sánh có/không có Layouts
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    KHÔNG CÓ LAYOUTS                                    │
+│                    KHÔNG CÓ LAYOUTS (Code lặp lại)                │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  pages/index.vue:                                                  │
@@ -54,10 +64,10 @@
 │                                                                     │
 │  pages/about.vue:                                                 │
 │  ┌─────────────────────────────────────────┐                      │
-│  │ [Header]                                │                      │
-│  │ [Sidebar]                               │                      │
+│  │ [Header] ← LẶP LẠI!                    │                      │
+│  │ [Sidebar] ← LẶP LẠI!                   │                      │
 │  │ [Content]                               │                      │
-│  │ [Footer]                                │                      │
+│  │ [Footer] ← LẶP LẠI!                   │                      │
 │  └─────────────────────────────────────────┘                      │
 │                                                                     │
 │  → Header, Sidebar, Footer LẶP LẠI trong MỌI page!            │
@@ -65,19 +75,19 @@
 └─────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    CÓ LAYOUTS                                          │
+│                    CÓ LAYOUTS (Code tái sử dụng)                │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  layouts/default.vue:                                              │
 │  ┌─────────────────────────────────────────┐                      │
 │  │ [Header]                                │                      │
 │  │ [Sidebar]                               │                      │
-│  │ <slot /> ← Page content here           │                      │
+│  │ <slot /> ← Page content here            │                      │
 │  │ [Footer]                                │                      │
 │  └─────────────────────────────────────────┘                      │
 │                                                                     │
 │  pages/index.vue → Render vào <slot />                           │
-│  pages/about.vue → Render vào <slot />                            │
+│  pages/about.vue → Render vào <slot />                           │
 │                                                                     │
 │  → Header, Sidebar, Footer CHỈ VIẾT 1 LẦN!                     │
 │                                                                     │
@@ -105,8 +115,7 @@
 
 ```vue
 <!-- app/layouts/default.vue -->
-<script setup>
-// Navigation items
+<script setup lang="ts">
 const navItems = [
   { label: 'Trang chủ', to: '/' },
   { label: 'Blog', to: '/blog' },
@@ -120,9 +129,7 @@ const navItems = [
     <!-- Header -->
     <header class="header">
       <div class="container">
-        <NuxtLink to="/" class="logo">
-          MyApp
-        </NuxtLink>
+        <NuxtLink to="/" class="logo">MyApp</NuxtLink>
 
         <nav class="nav">
           <NuxtLink
@@ -144,7 +151,7 @@ const navItems = [
 
     <!-- Footer -->
     <footer class="footer">
-      <p>© 2024 MyApp. All rights reserved.</p>
+      <p>© 2024 MyApp</p>
     </footer>
   </div>
 </template>
@@ -173,13 +180,6 @@ const navItems = [
   align-items: center;
 }
 
-.logo {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #42b883;
-  text-decoration: none;
-}
-
 .nav {
   display: flex;
   gap: 1.5rem;
@@ -188,10 +188,6 @@ const navItems = [
 .nav-link {
   color: #666;
   text-decoration: none;
-}
-
-.nav-link:hover {
-  color: #42b883;
 }
 
 .nav-link.router-link-active {
@@ -208,7 +204,6 @@ const navItems = [
   background: #f5f5f5;
   padding: 2rem;
   text-align: center;
-  color: #666;
 }
 </style>
 ```
@@ -217,13 +212,14 @@ const navItems = [
 
 ```vue
 <!-- app/layouts/auth.vue -->
+<script setup lang="ts">
+</script>
+
 <template>
   <div class="auth-layout">
     <!-- Chỉ có logo và content - không có nav -->
     <div class="auth-container">
-      <NuxtLink to="/" class="logo">
-        MyApp
-      </NuxtLink>
+      <NuxtLink to="/" class="logo">MyApp</NuxtLink>
 
       <!-- Content -->
       <slot />
@@ -265,7 +261,7 @@ const navItems = [
 
 ```vue
 <!-- app/layouts/admin.vue -->
-<script setup>
+<script setup lang="ts">
 const menuItems = [
   { label: 'Dashboard', to: '/admin', icon: '📊' },
   { label: 'Users', to: '/admin/users', icon: '👥' },
@@ -279,9 +275,7 @@ const menuItems = [
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-header">
-        <NuxtLink to="/" class="logo">
-          Admin Panel
-        </NuxtLink>
+        <NuxtLink to="/admin" class="logo">Admin Panel</NuxtLink>
       </div>
 
       <nav class="sidebar-nav">
@@ -325,11 +319,6 @@ const menuItems = [
   height: 100vh;
 }
 
-.sidebar-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid #333;
-}
-
 .sidebar-nav {
   padding: 1rem 0;
 }
@@ -359,15 +348,6 @@ const menuItems = [
   margin-left: 250px;
 }
 
-.admin-header {
-  background: white;
-  padding: 1rem 2rem;
-  border-bottom: 1px solid #eee;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 .admin-content {
   padding: 2rem;
 }
@@ -378,9 +358,35 @@ const menuItems = [
 
 ## 3. Nested Routes
 
-### 3.1 Cấu trúc Nested Routes
+### 3.1 Dùng để làm gì?
 
-Nested routes tổ chức routes theo cấu trúc phân cấp. Parent page chứa `<NuxtPage />` để render nested pages.
+**Nested routes tổ chức routes theo cấu trúc phân cấp.**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    NESTED ROUTES - GIẢI THÍCH ĐƠN GIẢN             │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  Parent page chứa <NuxtPage /> để render nested pages             │
+│                                                                     │
+│  Ví dụ: Blog section                                              │
+│  ├── /blog         → blog.vue (parent) + blog/index.vue           │
+│  ├── /blog/new     → blog.vue (parent) + blog/new.vue            │
+│  └── /blog/:slug   → blog.vue (parent) + blog/[slug].vue         │
+│                                                                     │
+│  → Cùng layout blog, nhưng nội dung khác nhau                     │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 3.2 Có Sẵn Hay Cần Custom?
+
+**NESTED ROUTES LÀ TÍNH NĂNG CÓ SẴN CỦA NUXT 4!**
+
+- `<NuxtPage />` là component có sẵn
+- Tự động render nested page theo URL
+
+### 3.3 Cấu trúc Nested Routes
 
 ```
 📁 app/pages/
@@ -389,15 +395,16 @@ Nested routes tổ chức routes theo cấu trúc phân cấp. Parent page chứ
 └── 📁 admin/
     ├── 📄 index.vue             → /admin (dashboard)
     ├── 📄 users.vue            → /admin/users
-    └── 📄 settings.vue        → /admin/settings
+    └── 📄 settings.vue         → /admin/settings
 ```
 
-### 3.2 Parent Page với NuxtPage
-
-Parent page có `<NuxtPage />` để render nested content. URL phải khớp để nested page được render.
+### 3.4 Parent Page với NuxtPage
 
 ```vue
 <!-- app/pages/admin.vue - Parent component -->
+<script setup lang="ts">
+</script>
+
 <template>
   <div class="admin-container">
     <h1>Admin Section</h1>
@@ -415,21 +422,47 @@ Parent page có `<NuxtPage />` để render nested content. URL phải khớp đ
 </template>
 ```
 
-### 3.3 Ví dụ: Blog với Nested Routes
+### 3.5 Flow Hoạt Động
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    NESTED ROUTES - FLOW                              │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  URL: /admin/users                                                │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │ app/pages/admin.vue (Parent)                                │   │
+│  │                                                             │   │
+│  │  <h1>Admin Section</h1>                                    │   │
+│  │  <nav>Dashboard | Users | Settings</nav>                   │   │
+│  │                                                             │   │
+│  │  ┌─────────────────────────────────────────────────────┐   │   │
+│  │  │ app/pages/admin/users.vue (Nested)                   │   │   │
+│  │  │                                                     │   │   │
+│  │  │  <h2>User Management</h2>                           │   │   │
+│  │  │  [User list here]                                  │   │   │
+│  │  │                                                     │   │   │
+│  │  └─────────────────────────────────────────────────────┘   │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 3.6 Cases Thực Tế: Blog với Nested Routes
 
 ```
 📁 app/pages/
 ├── 📄 blog.vue                    → /blog (layout)
 └── 📁 blog/
     ├── 📄 index.vue             → /blog (danh sách)
-    ├── 📄 new.vue               → /blog/new (tạo mới)
+    ├── 📄 new.vue              → /blog/new (tạo mới)
     └── 📄 [slug].vue           → /blog/:slug (chi tiết)
 ```
 
 ```vue
 <!-- app/pages/blog.vue -->
-<script setup>
-// Fetch categories cho navigation
+<script setup lang="ts">
 const categories = ref(['Tech', 'Life', 'Travel'])
 </script>
 
@@ -461,42 +494,36 @@ const categories = ref(['Tech', 'Life', 'Travel'])
 </template>
 ```
 
-**Sơ đồ hoạt động:**
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    NESTED ROUTES - FLOW                                  │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  URL: /admin/users                                                │
-│                                                                     │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │ app/pages/admin.vue (Parent)                                │   │
-│  │                                                             │   │
-│  │  <h1>Admin Section</h1>                                   │   │
-│  │  <nav>Dashboard | Users | Settings</nav>                   │   │
-│  │                                                             │   │
-│  │  ┌─────────────────────────────────────────────────────┐   │   │
-│  │  │ app/pages/admin/users.vue (Nested)                  │   │   │
-│  │  │                                                     │   │   │
-│  │  │  <h2>User Management</h2>                         │   │   │
-│  │  │  [User list here]                                 │   │   │
-│  │  │                                                     │   │   │
-│  │  └─────────────────────────────────────────────────────┘   │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
 ---
 
 ## 4. Layout Switching
 
-### 4.1 Sử dụng definePageMeta
+### 4.1 Dùng để làm gì?
+
+**Switch layout tùy theo page - VD: Auth pages dùng auth layout, Admin pages dùng admin layout.**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    LAYOUT SWITCHING                                  │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  pages/login.vue     → layout: 'auth'    → AuthLayout           │
+│  pages/register.vue  → layout: 'auth'    → AuthLayout           │
+│  pages/dashboard.vue → layout: 'default' → DefaultLayout        │
+│  pages/admin/users.vue → layout: 'admin'  → AdminLayout          │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 4.2 Có Sẵn Hay Cần Custom?
+
+**LAYOUT SWITCHING DÙNG `definePageMeta` - CÓ SẴN TRONG NUXT 4!**
+
+### 4.3 Cách Sử Dụng
 
 ```vue
-<!-- pages/login.vue -->
-<script setup>
+<!-- app/pages/login.vue -->
+<script setup lang="ts">
 // Sử dụng auth layout thay vì default
 definePageMeta({
   layout: 'auth'
@@ -512,8 +539,8 @@ definePageMeta({
 ```
 
 ```vue
-<!-- pages/admin/index.vue -->
-<script setup>
+<!-- app/pages/admin/index.vue -->
+<script setup lang="ts">
 // Sử dụng admin layout
 definePageMeta({
   layout: 'admin'
@@ -523,24 +550,21 @@ definePageMeta({
 <template>
   <div class="dashboard">
     <h1>Dashboard</h1>
-    <!-- Dashboard content -->
   </div>
 </template>
 ```
 
-### 4.2 Dynamic Layout
+### 4.4 Dynamic Layout
 
 ```vue
-<!-- pages/[username].vue -->
-<script setup>
-// Layout thay đổi theo username
+<!-- app/pages/[username].vue -->
+<script setup lang="ts">
 const route = useRoute()
-const username = route.params.username
+const username = route.params.username as string
 
-// Admin users get admin layout
+// Layout thay đổi theo username
 const layout = computed(() => {
   if (username === 'admin') return 'admin'
-  if (isAuthPage.value) return 'auth'
   return 'default'
 })
 
@@ -550,16 +574,15 @@ definePageMeta({
 </script>
 ```
 
-### 4.3 Override Layout in app.vue
+### 4.5 Override Layout in app.vue
 
 ```vue
-<!-- app.vue - Override default layout globally -->
-<script setup>
-// Bạn có thể customize default layout ở đây
+<!-- app.vue -->
+<script setup lang="ts">
 </script>
 
 <template>
-  <NuxtLayout :layout="currentLayout">
+  <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
 </template>
@@ -569,10 +592,32 @@ definePageMeta({
 
 ## 5. Page Transitions
 
-### 5.1 CSS Transitions
+### 5.1 Dùng để làm gì?
+
+**Page transitions tạo hiệu ứng khi chuyển trang - UX mượt mà hơn.**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    PAGE TRANSITIONS                                  │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  Khi navigate từ / → /about:                                     │
+│                                                                     │
+│  Page hiện tại: .page-leave-active → fade out                   │
+│  Page mới: .page-enter-active → fade in                           │
+│                                                                     │
+│  → User thấy transition mượt mà, không nhảy đột ngột            │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 5.2 CSS Transitions cơ bản
 
 ```vue
 <!-- app.vue -->
+<script setup lang="ts">
+</script>
+
 <template>
   <NuxtLayout>
     <NuxtPage />
@@ -598,10 +643,13 @@ definePageMeta({
 </style>
 ```
 
-### 5.2 Transition với Layout
+### 5.3 Transition với Layout
 
 ```vue
 <!-- app.vue -->
+<script setup lang="ts">
+</script>
+
 <template>
   <NuxtLayout>
     <NuxtPage v-slot="{ Component, route }">
@@ -625,11 +673,11 @@ definePageMeta({
 </style>
 ```
 
-### 5.3 Named Transitions
+### 5.4 Named Transitions
 
 ```vue
-<!-- page.vue -->
-<script setup>
+<!-- app/pages/blog.vue -->
+<script setup lang="ts">
 definePageMeta({
   pageTransition: {
     name: 'slide',
@@ -641,6 +689,9 @@ definePageMeta({
 
 ```vue
 <!-- app.vue -->
+<script setup lang="ts">
+</script>
+
 <template>
   <NuxtLayout>
     <NuxtPage />
@@ -672,26 +723,32 @@ definePageMeta({
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    LAYOUTS CHEAT SHEET                                   │
+│                    LAYOUTS CHEAT SHEET                              │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  TẠO LAYOUT:                                                      │
+│  TẠO LAYOUT:                                                     │
 │  ├── File: app/layouts/default.vue                               │
 │  ├── Dùng: <slot /> cho page content                            │
 │  └── Auto-applied cho mọi page                                  │
 │                                                                     │
-│  CHỌN LAYOUT CHO PAGE:                                          │
-│  ├── definePageMeta({ layout: 'auth' })                        │
-│  └── definePageMeta({ layout: 'admin' })                       │
+│  SWITCH LAYOUT:                                                  │
+│  ├── definePageMeta({ layout: 'auth' })                         │
+│  ├── definePageMeta({ layout: 'admin' })                        │
+│  └── Dynamic: definePageMeta({ layout: () => computed })       │
 │                                                                     │
 │  NESTED ROUTES:                                                   │
 │  ├── pages/admin.vue → Parent với <NuxtPage />                  │
-│  ├── pages/admin/users.vue → Nested page                        │
+│  ├── pages/admin/users.vue → Nested page                         │
 │  └── URL: /admin/users                                          │
 │                                                                     │
 │  TRANSITIONS:                                                     │
-│  ├── CSS classes: .page-enter-active, etc.                      │
-│  └── definePageMeta: { pageTransition: { name: 'fade' } }     │
+│  ├── CSS classes: .page-enter-active, .page-leave-active         │
+│  └── definePageMeta: { pageTransition: { name: 'fade' } }       │
+│                                                                     │
+│  BUILT-IN COMPONENTS:                                            │
+│  ├── <NuxtPage /> → Render current page                        │
+│  ├── <NuxtLayout /> → Layout wrapper                           │
+│  └── <NuxtLink /> → Smart link                                 │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
